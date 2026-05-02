@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch, AsyncMock, Mock
 import sys
 import os
 
@@ -15,7 +15,7 @@ def test_health_endpoint():
     """ヘルスチェックエンドポイントのテスト"""
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json()["status"] in ["healthy", "unhealthy"]
+    assert response.json()["status"] == "healthy"
 
 def test_root_endpoint():
     """ルートエンドポイントのテスト"""
@@ -23,13 +23,8 @@ def test_root_endpoint():
     assert response.status_code == 200
     assert "message" in response.json()
 
-@patch('app.main.gemini_service')
-def test_chat_endpoint_success(mock_gemini):
+def test_chat_endpoint_success():
     """正常なチャットリクエストのテスト"""
-    # モックの設定
-    mock_gemini.generate_response = AsyncMock(return_value="こんにちは！何かお手伝いできますか？")
-    mock_gemini.health_check = Mock(return_value=True)
-    
     response = client.post(
         "/chat",
         json={"message": "こんにちは"}
@@ -39,7 +34,7 @@ def test_chat_endpoint_success(mock_gemini):
     data = response.json()
     assert "response" in data
     assert "timestamp" in data
-    assert data["response"] == "こんにちは！何かお手伝いできますか？"
+    assert data["response"] == "モック応答"
 
 def test_chat_endpoint_empty_message():
     """空メッセージのエラーテスト"""

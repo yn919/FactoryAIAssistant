@@ -11,7 +11,7 @@ class GeminiService:
             raise ValueError("GEMINI_API_KEY is not configured")
         
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
     
     async def generate_response(self, message: str, context: Optional[str] = None) -> str:
         """
