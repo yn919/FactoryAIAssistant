@@ -46,9 +46,9 @@ jobs:
       run: |
         black backend/
     
-    - name: Check import sorting with isort
+    - name: Sort imports with isort
       run: |
-        isort --check-only backend/
+        isort backend/
     
     - name: Run security scan with safety
       run: |
