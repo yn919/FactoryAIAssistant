@@ -8,123 +8,162 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.main import app
+from tests.fixtures.gemini_service import test_settings, mock_gemini_service
 
-client = TestClient(app)
-
-@patch('app.main.get_gemini_service')
-def test_health_endpoint(mock_get_gemini):
-    """ヘルスチェックエンドポイントのテスト"""
-    # モックの設定
-    mock_gemini = Mock()
-    mock_gemini.health_check = Mock(return_value=True)
-    mock_get_gemini.return_value = mock_gemini
+# テスト用のクライアントを作成
+def create_test_client():
+    """モックを注入したテストクライアントを作成"""
+    from app.core.dependencies import get_gemini_service
     
-    response = client.get("/health")
-    assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
+    def override_get_gemini_service():
+        mock_service = Mock()
+        mock_service.generate_response = AsyncMock(return_value="テスト応答メッセージ")
+        mock_service.health_check = Mock(return_value=True)
+        return mock_service
+    
+    app.dependency_overrides[get_gemini_service] = override_get_gemini_service
+    client = TestClient(app)
+    
+    # テスト後にオーバーライドをクリーンアップ
+    def cleanup():
+        app.dependency_overrides.clear()
+    
+    return client, cleanup
+
+def test_health_endpoint():
+    """ヘルスチェックエンドポイントのテスト"""
+    client, cleanup = create_test_client()
+    try:
+        response = client.get("/api/v1/health")
+        assert response.status_code == 200
+        assert response.json()["status"] == "healthy"
+    finally:
+        cleanup()
 
 def test_root_endpoint():
     """ルートエンドポイントのテスト"""
-    response = client.get("/")
-    assert response.status_code == 200
-    assert "message" in response.json()
+    client, cleanup = create_test_client()
+    try:
+        response = client.get("/")
+        assert response.status_code == 200
+        assert "message" in response.json()
+    finally:
+        cleanup()
 
-@patch('app.main.get_gemini_service')
-def test_chat_endpoint_success(mock_get_gemini):
+def test_chat_endpoint_success():
     """正常なチャットリクエストのテスト"""
-    # モックの設定
-    mock_gemini = Mock()
-    mock_gemini.generate_response = AsyncMock(return_value="モック応答")
-    mock_gemini.health_check = Mock(return_value=True)
-    mock_get_gemini.return_value = mock_gemini
-    
-    response = client.post(
-        "/chat",
-        json={"message": "こんにちは"}
-    )
-    
-    assert response.status_code == 200
-    data = response.json()
-    assert "response" in data
-    assert data["response"] == "モック応答"
+    client, cleanup = create_test_client()
+    try:
+        response = client.post(
+            "/api/v1/chat",
+            json={"message": "こんにちは"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "response" in data
+        assert data["response"] == "テスト応答メッセージ"
+    finally:
+        cleanup()
 
 def test_chat_endpoint_empty_message():
     """空メッセージのエラーテスト"""
-    response = client.post(
-        "/chat",
-        json={"message": ""}
-    )
-    
-    assert response.status_code == 422  # Validation error
+    client, cleanup = create_test_client()
+    try:
+        response = client.post(
+            "/api/v1/chat",
+            json={"message": ""}
+        )
+        
+        assert response.status_code == 422  # Validation error
+    finally:
+        cleanup()
 
 def test_chat_endpoint_missing_message():
     """メッセージフィールドがない場合のエラーテスト"""
-    response = client.post(
-        "/chat",
-        json={}
-    )
-    
-    assert response.status_code == 422  # Validation error
+    client, cleanup = create_test_client()
+    try:
+        response = client.post(
+            "/api/v1/chat",
+            json={}
+        )
+        
+        assert response.status_code == 422  # Validation error
+    finally:
+        cleanup()
 
-@patch('app.main.get_gemini_service')
-def test_chat_endpoint_with_context(mock_get_gemini):
+def test_chat_endpoint_with_context():
     """コンテキスト付きチャットリクエストのテスト"""
-    # モックの設定
-    mock_gemini = Mock()
-    mock_gemini.generate_response = AsyncMock(return_value="コンテキストを考慮した応答")
-    mock_gemini.health_check = Mock(return_value=True)
-    mock_get_gemini.return_value = mock_gemini
-    
-    response = client.post(
-        "/chat",
-        json={
-            "message": "質問です",
-            "context": "これはテストコンテキストです"
-        }
-    )
-    
-    assert response.status_code == 200
-    data = response.json()
-    assert "response" in data
-    assert data["response"] == "コンテキストを考慮した応答"
+    client, cleanup = create_test_client()
+    try:
+        response = client.post(
+            "/api/v1/chat",
+            json={
+                "message": "質問です",
+                "context": "これはテストコンテキストです"
+            }
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "response" in data
+        assert data["response"] == "テスト応答メッセージ"
+    finally:
+        cleanup()
 
-@patch('app.main.get_gemini_service')
-def test_chat_endpoint_service_error(mock_get_gemini):
+def test_chat_endpoint_service_error():
     """サービスエラー時のテスト"""
-    # モックで例外を発生
-    mock_gemini = Mock()
-    mock_gemini.generate_response = AsyncMock(side_effect=Exception("APIエラー"))
-    mock_gemini.health_check = Mock(return_value=True)
-    mock_get_gemini.return_value = mock_gemini
+    from app.core.exceptions import GeminiAPIException
+    from app.core.dependencies import get_gemini_service
     
-    response = client.post(
-        "/chat",
-        json={"message": "こんにちは"}
-    )
+    def override_get_gemini_service_error():
+        mock_service = Mock()
+        mock_service.generate_response = AsyncMock(side_effect=GeminiAPIException("APIエラー"))
+        mock_service.health_check = Mock(return_value=True)
+        return mock_service
     
-    assert response.status_code == 500
+    app.dependency_overrides[get_gemini_service] = override_get_gemini_service_error
+    client = TestClient(app)
+    
+    try:
+        response = client.post(
+            "/api/v1/chat",
+            json={"message": "こんにちは"}
+        )
+        
+        assert response.status_code == 503
+    finally:
+        app.dependency_overrides.clear()
 
 def test_chat_endpoint_long_message():
     """長すぎるメッセージのバリデーションテスト"""
-    long_message = "a" * 1001  # 1000文字を超えるメッセージ
-    
-    response = client.post(
-        "/chat",
-        json={"message": long_message}
-    )
-    
-    assert response.status_code == 422  # Validation error
+    client, cleanup = create_test_client()
+    try:
+        long_message = "a" * 1001  # 1000文字を超えるメッセージ
+        
+        response = client.post(
+            "/api/v1/chat",
+            json={"message": long_message}
+        )
+        
+        assert response.status_code == 422  # Validation error
+    finally:
+        cleanup()
 
 def test_chat_endpoint_long_context():
     """長すぎるコンテキストのバリデーションテスト"""
-    long_context = "a" * 501  # 500文字を超えるコンテキスト
-    
-    response = client.post(
-        "/chat",
-        json={
-            "message": "テスト",
-            "context": long_context
-        }
-    )
-    
-    assert response.status_code == 422  # Validation error
+    client, cleanup = create_test_client()
+    try:
+        long_context = "a" * 501  # 500文字を超えるコンテキスト
+        
+        response = client.post(
+            "/api/v1/chat",
+            json={
+                "message": "テスト",
+                "context": long_context
+            }
+        )
+        
+        assert response.status_code == 422  # Validation error
+    finally:
+        cleanup()

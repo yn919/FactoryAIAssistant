@@ -1,17 +1,19 @@
 import google.generativeai as genai
 from typing import Optional
 import logging
-from app.config import settings
+from app.core.config import Settings
+from app.core.exceptions import GeminiAPIException
 
 logger = logging.getLogger(__name__)
 
 class GeminiService:
-    def __init__(self):
-        if not settings.GEMINI_API_KEY:
+    def __init__(self, settings: Settings):
+        if not settings.gemini_api_key:
             raise ValueError("GEMINI_API_KEY is not configured")
         
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        self.settings = settings
+        genai.configure(api_key=settings.gemini_api_key)
+        self.model = genai.GenerativeModel(settings.gemini_model)
     
     async def generate_response(self, message: str, context: Optional[str] = None) -> str:
         """
@@ -41,7 +43,7 @@ class GeminiService:
                 
         except Exception as e:
             logger.error(f"Error generating response with Gemini: {str(e)}")
-            return "申し訳ありません。現在サービスを利用できません。しばらくしてから再度お試しください。"
+            raise GeminiAPIException(f"Gemini API呼び出しに失敗しました: {str(e)}")
     
     def health_check(self) -> bool:
         """
@@ -57,12 +59,3 @@ class GeminiService:
             logger.error(f"Gemini API health check failed: {str(e)}")
             return False
 
-# 遅延初期化用のインスタンス
-_gemini_service_instance = None
-
-def get_gemini_service():
-    """GeminiServiceのインスタンスを取得（遅延初期化）"""
-    global _gemini_service_instance
-    if _gemini_service_instance is None:
-        _gemini_service_instance = GeminiService()
-    return _gemini_service_instance
