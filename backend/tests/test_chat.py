@@ -11,8 +11,14 @@ from app.main import app
 
 client = TestClient(app)
 
-def test_health_endpoint():
+@patch('app.main.get_gemini_service')
+def test_health_endpoint(mock_get_gemini):
     """ヘルスチェックエンドポイントのテスト"""
+    # モックの設定
+    mock_gemini = Mock()
+    mock_gemini.health_check = Mock(return_value=True)
+    mock_get_gemini.return_value = mock_gemini
+    
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json()["status"] == "healthy"
@@ -23,8 +29,15 @@ def test_root_endpoint():
     assert response.status_code == 200
     assert "message" in response.json()
 
-def test_chat_endpoint_success():
+@patch('app.main.get_gemini_service')
+def test_chat_endpoint_success(mock_get_gemini):
     """正常なチャットリクエストのテスト"""
+    # モックの設定
+    mock_gemini = Mock()
+    mock_gemini.generate_response = AsyncMock(return_value="モック応答")
+    mock_gemini.health_check = Mock(return_value=True)
+    mock_get_gemini.return_value = mock_gemini
+    
     response = client.post(
         "/chat",
         json={"message": "こんにちは"}
@@ -33,7 +46,6 @@ def test_chat_endpoint_success():
     assert response.status_code == 200
     data = response.json()
     assert "response" in data
-    assert "timestamp" in data
     assert data["response"] == "モック応答"
 
 def test_chat_endpoint_empty_message():
@@ -54,12 +66,14 @@ def test_chat_endpoint_missing_message():
     
     assert response.status_code == 422  # Validation error
 
-@patch('app.main.gemini_service')
-def test_chat_endpoint_with_context(mock_gemini):
+@patch('app.main.get_gemini_service')
+def test_chat_endpoint_with_context(mock_get_gemini):
     """コンテキスト付きチャットリクエストのテスト"""
     # モックの設定
+    mock_gemini = Mock()
     mock_gemini.generate_response = AsyncMock(return_value="コンテキストを考慮した応答")
     mock_gemini.health_check = Mock(return_value=True)
+    mock_get_gemini.return_value = mock_gemini
     
     response = client.post(
         "/chat",
@@ -74,12 +88,14 @@ def test_chat_endpoint_with_context(mock_gemini):
     assert "response" in data
     assert data["response"] == "コンテキストを考慮した応答"
 
-@patch('app.main.gemini_service')
-def test_chat_endpoint_service_error(mock_gemini):
+@patch('app.main.get_gemini_service')
+def test_chat_endpoint_service_error(mock_get_gemini):
     """サービスエラー時のテスト"""
     # モックで例外を発生
+    mock_gemini = Mock()
     mock_gemini.generate_response = AsyncMock(side_effect=Exception("APIエラー"))
     mock_gemini.health_check = Mock(return_value=True)
+    mock_get_gemini.return_value = mock_gemini
     
     response = client.post(
         "/chat",

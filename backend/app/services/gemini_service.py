@@ -57,4 +57,12 @@ class GeminiService:
             logger.error(f"Gemini API health check failed: {str(e)}")
             return False
 
-gemini_service = GeminiService()
+# 遅延初期化用のインスタンス
+_gemini_service_instance = None
+
+def get_gemini_service():
+    """GeminiServiceのインスタンスを取得（遅延初期化）"""
+    global _gemini_service_instance
+    if _gemini_service_instance is None:
+        _gemini_service_instance = GeminiService()
+    return _gemini_service_instance
