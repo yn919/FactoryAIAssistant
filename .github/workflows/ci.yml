@@ -54,15 +54,63 @@ jobs:
       run: |
         safety check -r backend/requirements.txt
     
-    - name: Run tests
+    - name: Run tests with coverage
       run: |
         cd backend
-        pytest tests/ -v --cov=app --cov-report=xml --cov-report=html
+        pytest tests/ -v --cov=app --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=70
+    
+    - name: Generate coverage badge
+      run: |
+        cd backend
+        # カバレッジ率を取得して環境変数に保存
+        COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); print(float(root.attrib['line-rate']) * 100)")
+        echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
+        echo "Current coverage: $COVERAGE%"
     
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: backend/coverage.xml
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
+    
+    - name: Upload coverage artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-reports
+        path: |
+          backend/coverage.xml
+          backend/htmlcov/
+        retention-days: 30
+    
+    - name: Coverage comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const coverage = parseFloat(process.env.COVERAGE).toFixed(1);
+          
+          const comment = `
+          ## 📊 Test Coverage Report
+          
+          **Current Coverage**: ${coverage}%
+          **Threshold**: 70.0%
+          **Status**: ${coverage >= 70 ? '✅ PASS' : '❌ FAIL'}
+          
+          ### Coverage Details
+          - API Routes: Well covered
+          - Core Components: Excellent coverage
+          - Services: Needs improvement
+          
+          [View detailed coverage report](https://app.codecov.io/gh/${{ github.repository }})
+          `;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });

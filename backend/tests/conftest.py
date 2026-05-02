@@ -6,30 +6,5 @@ from unittest.mock import Mock, AsyncMock, patch
 # モジュールパスを追加
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
-@pytest.fixture
-def mock_gemini_response():
-    """Gemini APIのモックレスポンス"""
-    mock_response = Mock()
-    mock_response.text = "これはテスト応答です"
-    return mock_response
-
-@pytest.fixture
-def mock_gemini_service():
-    """Geminiサービスのモック"""
-    from app.services.gemini_service import GeminiService
-    
-    mock_service = Mock(spec=GeminiService)
-    mock_service.generate_response = AsyncMock(return_value="テスト応答メッセージ")
-    mock_service.health_check = Mock(return_value=True)
-    return mock_service
-
-@pytest.fixture(autouse=True)
-def mock_gemini_service_import():
-    """Geminiサービスのインポートをモック"""
-    mock_service = Mock()
-    mock_service.generate_response = AsyncMock(return_value="モック応答")
-    mock_service.health_check = Mock(return_value=True)
-    
-    with patch('app.main.get_gemini_service', return_value=mock_service):
-        yield
+# テストフィクスチャをインポート
+from tests.fixtures.gemini_service import test_settings, mock_gemini_service, mock_gemini_response
