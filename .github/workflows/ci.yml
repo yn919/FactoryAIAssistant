@@ -88,32 +88,4 @@ jobs:
           backend/htmlcov/
         retention-days: 30
     
-    - name: Coverage comment on PR
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const fs = require('fs');
-          const coverage = parseFloat(process.env.COVERAGE).toFixed(1);
-          
-          const comment = `
-          ## 📊 Test Coverage Report
-          
-          **Current Coverage**: ${coverage}%
-          **Threshold**: 70.0%
-          **Status**: ${coverage >= 70 ? '✅ PASS' : '❌ FAIL'}
-          
-          ### Coverage Details
-          - API Routes: Well covered
-          - Core Components: Excellent coverage
-          - Services: Needs improvement
-          
-          [View detailed coverage report](https://app.codecov.io/gh/${{ github.repository }})
-          `;
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: comment
-          });
+    
