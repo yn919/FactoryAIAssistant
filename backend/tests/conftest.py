@@ -6,16 +6,6 @@ from unittest.mock import Mock, AsyncMock, patch
 # モジュールパスを追加
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# テスト環境では.envファイルを読み込まないように設定
-@pytest.fixture(autouse=True)
-def mock_env_settings():
-    """テスト環境用のモック設定"""
-    with patch.dict(os.environ, {
-        'GEMINI_API_KEY': 'test_api_key',
-        'SERVER_HOST': 'localhost',
-        'SERVER_PORT': '8000'
-    }):
-        yield
 
 @pytest.fixture
 def mock_gemini_response():
@@ -41,5 +31,5 @@ def mock_gemini_service_import():
     mock_service.generate_response = AsyncMock(return_value="モック応答")
     mock_service.health_check = Mock(return_value=True)
     
-    with patch('app.main.gemini_service', mock_service):
+    with patch('app.main.get_gemini_service', return_value=mock_service):
         yield
