@@ -23,9 +23,9 @@ def test_add_cors_middleware_default(mock_get_settings):
     assert len(app.user_middleware) > 0
     
     # CORSMiddlewareが追加されていることを確認
-    middleware_types = [type(middleware.cls) for middleware in app.user_middleware]
-    from fastapi.middleware.cors import CORSMiddleware
-    assert CORSMiddleware in middleware_types
+    middleware_classes = [middleware.cls for middleware in app.user_middleware]
+    from starlette.middleware.cors import CORSMiddleware
+    assert CORSMiddleware in middleware_classes
 
 
 @patch('app.middleware.cors.get_settings')

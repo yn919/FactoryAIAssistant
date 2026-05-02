@@ -1,8 +1,9 @@
 """ロギング機能のテスト"""
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 import logging
 from app.core.logging import setup_logging, get_logger
+from tests.data.test_messages import LOGGING_TEST_DATA
 
 
 @patch('app.core.logging.get_settings')
@@ -10,19 +11,17 @@ from app.core.logging import setup_logging, get_logger
 @patch('app.core.logging.logging.getLogger')
 def test_setup_logging_default(mock_get_logger, mock_basic_config, mock_get_settings):
     """ロギング設定デフォルト値テスト"""
-    mock_settings = Mock()
-    mock_settings.log_level = "INFO"
-    mock_settings.log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    mock_get_settings.return_value = mock_settings
+    mock_settings = mock_get_settings.return_value
+    mock_settings.log_level = LOGGING_TEST_DATA["default_level"]
+    mock_settings.log_format = LOGGING_TEST_DATA["log_format"]
     
-    mock_logger = Mock()
-    mock_get_logger.return_value = mock_logger
+    mock_logger = mock_get_logger.return_value
     
     result = setup_logging()
     
     mock_basic_config.assert_called_once()
     assert mock_get_logger.call_count >= 4  # __main__ + 3サードパーティライブラリ
-    assert result == mock_logger.return_value
+    assert result == mock_logger
 
 
 @patch('app.core.logging.get_settings')
@@ -30,13 +29,11 @@ def test_setup_logging_default(mock_get_logger, mock_basic_config, mock_get_sett
 @patch('app.core.logging.logging.getLogger')
 def test_setup_logging_debug_level(mock_get_logger, mock_basic_config, mock_get_settings):
     """デバッグレベルでのロギング設定テスト"""
-    mock_settings = Mock()
-    mock_settings.log_level = "DEBUG"
-    mock_settings.log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    mock_get_settings.return_value = mock_settings
+    mock_settings = mock_get_settings.return_value
+    mock_settings.log_level = LOGGING_TEST_DATA["debug_level"]
+    mock_settings.log_format = LOGGING_TEST_DATA["log_format"]
     
-    mock_logger = Mock()
-    mock_get_logger.return_value = mock_logger
+    mock_logger = mock_get_logger.return_value
     
     setup_logging()
     
@@ -48,10 +45,9 @@ def test_setup_logging_debug_level(mock_get_logger, mock_basic_config, mock_get_
 def test_get_logger():
     """ロガー取得テスト"""
     with patch('app.core.logging.logging.getLogger') as mock_get_logger:
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
+        mock_logger = mock_get_logger.return_value
         
-        result = get_logger("test_logger")
+        result = get_logger(LOGGING_TEST_DATA["test_logger_name"])
         
         assert result == mock_logger
-        mock_get_logger.assert_called_once_with("test_logger")
+        mock_get_logger.assert_called_once_with(LOGGING_TEST_DATA["test_logger_name"])

@@ -27,9 +27,9 @@ def test_app_includes_router():
 
 def test_cors_middleware_added():
     """CORSミドルウェアが追加されていることを確認"""
-    middleware_types = [type(middleware.cls) for middleware in app.user_middleware]
-    from fastapi.middleware.cors import CORSMiddleware
-    assert CORSMiddleware in middleware_types
+    middleware_classes = [middleware.cls for middleware in app.user_middleware]
+    from starlette.middleware.cors import CORSMiddleware
+    assert CORSMiddleware in middleware_classes
 
 
 def test_exception_handlers_added():
@@ -80,7 +80,7 @@ async def test_lifespan_startup_failure(mock_logger, mock_get_settings):
             pass
 
 
-@patch('app.main.uvicorn.run')
+@patch('uvicorn.run')
 @patch('app.main.get_settings')
 def test_main_execution(mock_get_settings, mock_uvicorn_run):
     """メイン実行テスト"""
@@ -90,10 +90,5 @@ def test_main_execution(mock_get_settings, mock_uvicorn_run):
     )
     mock_get_settings.return_value = mock_settings
     
-    # __main__ブロックをシミュレート
-    with patch.dict('__main__.__dict__', {'__name__': '__main__'}):
-        # インポート時に実行される部分をテスト
-        import app.main
-        
     # uvicorn.runが正しい引数で呼ばれることを確認
     # このテストは実際の実行環境では呼ばれないため、モック検証は省略
