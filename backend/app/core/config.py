@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     """アプリケーション設定"""
     
     # API設定
-    gemini_api_key: str
+    gemini_api_key: Optional[str] = None
     server_host: str = "0.0.0.0"
     server_port: int = 8000
     
@@ -53,5 +53,6 @@ def get_settings() -> Settings:
     return Settings()
 
 
-# 後方互換性のためのエイリアス
-settings = get_settings()
+# 後方互換性のためのエイリアス（遅延読み込み）
+def get_cached_settings():
+    return get_settings()

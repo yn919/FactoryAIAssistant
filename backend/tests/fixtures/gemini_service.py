@@ -7,7 +7,7 @@ from app.core.config import Settings
 def test_settings():
     """テスト用設定"""
     return Settings(
-        gemini_api_key="test_api_key",
+        gemini_api_key="mock_test_api_key_12345",
         server_host="localhost",
         server_port=8000,
         cors_origins=["http://localhost:3000"],
