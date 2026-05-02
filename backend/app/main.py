@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 import logging
 
 from app.config import settings
-from app.services.gemini_service import gemini_service
+from app.services.gemini_service import get_gemini_service
 from app.models.chat import ChatRequest, ChatResponse, HealthResponse
 
 # ロギング設定
@@ -51,6 +51,7 @@ async def root():
 async def health_check():
     """ヘルスチェックエンドポイント"""
     try:
+        gemini_service = get_gemini_service()
         is_healthy = gemini_service.health_check()
         if is_healthy:
             return HealthResponse(status="healthy")
@@ -68,6 +69,7 @@ async def chat(request: ChatRequest):
     """
     try:
         # Geminiサービスを使用して応答を生成
+        gemini_service = get_gemini_service()
         response_text = await gemini_service.generate_response(
             message=request.message,
             context=request.context
