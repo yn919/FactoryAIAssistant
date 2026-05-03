@@ -167,3 +167,43 @@ def test_chat_endpoint_long_context():
         assert response.status_code == 422  # Validation error
     finally:
         cleanup()
+
+def test_health_endpoint_unhealthy():
+    """Test health check endpoint when service is unhealthy"""
+    from app.core.dependencies import get_gemini_service
+    
+    def override_get_gemini_service_unhealthy():
+        mock_service = Mock()
+        mock_service.generate_response = AsyncMock(return_value="Test response")
+        mock_service.health_check = Mock(return_value=False)  # Service unhealthy
+        return mock_service
+    
+    app.dependency_overrides[get_gemini_service] = override_get_gemini_service_unhealthy
+    client = TestClient(app)
+    
+    try:
+        response = client.get("/api/v1/health")
+        assert response.status_code == 503
+        assert "Service unavailable" in response.json()["detail"]
+    finally:
+        app.dependency_overrides.clear()
+
+def test_health_endpoint_service_exception():
+    """Test health check endpoint when service throws exception"""
+    from app.core.dependencies import get_gemini_service
+    from app.core.exceptions import GeminiAPIException
+    
+    def override_get_gemini_service_exception():
+        mock_service = Mock()
+        mock_service.health_check = Mock(side_effect=GeminiAPIException("Service error"))
+        return mock_service
+    
+    app.dependency_overrides[get_gemini_service] = override_get_gemini_service_exception
+    client = TestClient(app)
+    
+    try:
+        response = client.get("/api/v1/health")
+        assert response.status_code == 503
+        assert "Service error" in response.json()["detail"]
+    finally:
+        app.dependency_overrides.clear()

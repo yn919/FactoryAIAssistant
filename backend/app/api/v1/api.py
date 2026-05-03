@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import chat, health, root
+from . import chat, health, root
 
 api_router = APIRouter()
 
