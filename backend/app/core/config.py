@@ -36,9 +36,9 @@ class Settings(BaseSettings):
     gemini_max_tokens: Optional[int] = None
     
     @classmethod
-    def validate(cls):
+    def validate(cls, settings: 'Settings'):
         """Required settings validation"""
-        if not cls.GEMINI_API_KEY:
+        if not settings.gemini_api_key:
             raise ValueError("GEMINI_API_KEY is required. Please set it in .env file.")
     
     class Config:
