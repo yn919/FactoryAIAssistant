@@ -19,6 +19,8 @@ backend/
 │   ├── api/          # APIエンドポイント
 │   ├── core/         # 設定・依存関係
 │   ├── middleware/   # ミドルウェア
+│   ├── models/       # Pydanticモデル・データモデル
+│   ├── services/     # ビジネスロジック・外部API連携
 │   └── main.py       # アプリケーションエントリーポイント
 ├── tests/            # テストファイル
 └── requirements.txt  # 依存パッケージ
@@ -26,7 +28,10 @@ backend/
 ## 開発ルール
 - 新機能は必ずテストを作成する
 - APIエンドポイントはapp/api/以下に配置
-- データベース操作はcore/以下に集約
+- データ操作関連は以下に配置：
+  - データベース操作: app/database/
+  - 外部API操作: app/services/
+  - 設定・依存関係: app/core/
 - エラーハンドリングは一貫性を持たせる
 - API_KEYなどの機密情報は必ずmockでテストする
 - コメントは英語で記述する
