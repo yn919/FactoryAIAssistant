@@ -1,0 +1,15 @@
+# Japanese Font Fallback Characters
+# Include common Japanese characters for TextMeshPro
+
+# Hiragana (ひらがな)
+3040-309F
+
+# Katakana (カタカナ) - including \u30BB (セ)
+30A0-30FF
+
+# Common Kanji (常用漢字)
+4E00-9FFF
+
+# Japanese punctuation and symbols
+3000-303F
+FF00-FFEF
