@@ -1,4 +1,4 @@
-"""依存性注入のテスト"""
+"""Tests for dependency injection"""
 import pytest
 from unittest.mock import Mock, patch
 from app.core.dependencies import get_gemini_service
@@ -7,7 +7,7 @@ from app.services.gemini_service import GeminiService
 
 
 def test_get_gemini_service_success():
-    """Geminiサービス依存性注入成功テスト"""
+    """Test successful Gemini service dependency injection"""
     mock_settings = Settings(
         gemini_api_key="test_key",
         gemini_model="gemini-1.5-pro"
@@ -24,7 +24,7 @@ def test_get_gemini_service_success():
 
 
 def test_get_gemini_service_no_api_key():
-    """APIキーなしでのGeminiサービス依存性注入失敗テスト"""
+    """Test Gemini service dependency injection failure without API key"""
     mock_settings = Settings(gemini_api_key=None)
     
     with patch('app.core.dependencies.GeminiService') as mock_gemini_class:

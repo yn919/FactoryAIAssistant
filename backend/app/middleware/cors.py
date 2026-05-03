@@ -3,7 +3,7 @@ from app.core.config import get_settings
 
 
 def add_cors_middleware(app):
-    """CORSミドルウェアを追加"""
+    """Add CORS middleware"""
     settings = get_settings()
     
     app.add_middleware(

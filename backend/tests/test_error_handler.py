@@ -1,4 +1,4 @@
-"""エラーハンドラーのテスト"""
+"""Tests for error handlers"""
 import pytest
 from unittest.mock import patch
 from fastapi.responses import JSONResponse
@@ -10,7 +10,7 @@ from tests.utils.test_helpers import assert_json_response_contains
 
 @pytest.mark.asyncio
 async def test_factory_ai_exception_handler(mock_request):
-    """FactoryAIExceptionハンドラーテスト"""
+    """Test FactoryAIException handler"""
     mock_exception = FactoryAIException(
         message=EXCEPTION_TEST_MESSAGES["factory_ai"],
         status_code=400,
@@ -30,7 +30,7 @@ async def test_factory_ai_exception_handler(mock_request):
 
 @pytest.mark.asyncio
 async def test_factory_ai_exception_handler_no_details(mock_request):
-    """詳細なしFactoryAIExceptionハンドラーテスト"""
+    """Test FactoryAIException handler without details"""
     mock_exception = FactoryAIException("Simple error")
     
     with patch('app.middleware.error_handler.logger') as mock_logger:
@@ -42,7 +42,7 @@ async def test_factory_ai_exception_handler_no_details(mock_request):
 
 @pytest.mark.asyncio
 async def test_general_exception_handler(mock_request):
-    """一般例外ハンドラーテスト"""
+    """Test general exception handler"""
     mock_exception = Exception(EXCEPTION_TEST_MESSAGES["unexpected"])
     
     with patch('app.middleware.error_handler.logger') as mock_logger:
@@ -61,7 +61,7 @@ async def test_general_exception_handler(mock_request):
 
 @pytest.mark.asyncio
 async def test_general_exception_handler_gemini_api(mock_request):
-    """GeminiAPIExceptionの一般ハンドラーテスト"""
+    """Test general handler for GeminiAPIException"""
     mock_exception = GeminiAPIException(EXCEPTION_TEST_MESSAGES["gemini_api"])
     
     with patch('app.middleware.error_handler.logger') as mock_logger:

@@ -4,10 +4,10 @@ from app.core.config import get_settings
 
 
 def setup_logging():
-    """構造化ロギングの設定"""
+    """Setup structured logging"""
     settings = get_settings()
     
-    # ロガーの基本設定
+    # Basic logger configuration
     logging.basicConfig(
         level=getattr(logging, settings.log_level.upper()),
         format=settings.log_format,
@@ -17,7 +17,7 @@ def setup_logging():
         ]
     )
     
-    # サードパーティライブラリのログレベルを調整
+    # Adjust log levels for third-party libraries
     logging.getLogger("uvicorn").setLevel(logging.INFO)
     logging.getLogger("fastapi").setLevel(logging.INFO)
     logging.getLogger("google.generativeai").setLevel(logging.WARNING)
@@ -26,5 +26,5 @@ def setup_logging():
 
 
 def get_logger(name: str) -> logging.Logger:
-    """ロガーインスタンスの取得"""
+    """Get logger instance"""
     return logging.getLogger(name)

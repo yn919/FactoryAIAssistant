@@ -1,26 +1,26 @@
-"""テスト用メッセージデータ"""
+"""Test message data"""
 
-# Geminiサービステスト用メッセージ
+# Messages for Gemini service tests
 GEMINI_TEST_MESSAGES = {
-    "simple": "テストメッセージ",
-    "with_context": "メッセージ",
-    "context": "コンテキスト",
+    "simple": "Test message",
+    "with_context": "Message",
+    "context": "Context",
     "health_check": "test",
     "empty_response": "",
-    "expected_prompt": "コンテキスト: コンテキスト\n\nメッセージ: メッセージ"
+    "expected_prompt": "Context: Context\n\nMessage: Message"
 }
 
-# 例外テスト用メッセージ
+# Messages for exception tests
 EXCEPTION_TEST_MESSAGES = {
     "factory_ai": "Test message",
     "gemini_api": "API Error",
     "validation": "Validation Error",
     "configuration": "Config Error",
     "unexpected": "Unexpected error",
-    "internal_server": "内部サーバーエラーが発生しました"
+    "internal_server": "Internal server error occurred"
 }
 
-# ロギングテスト用データ
+# Data for logging tests
 LOGGING_TEST_DATA = {
     "default_level": "INFO",
     "debug_level": "DEBUG",
@@ -28,7 +28,7 @@ LOGGING_TEST_DATA = {
     "test_logger_name": "test_logger"
 }
 
-# 設定テスト用データ
+# Data for configuration tests
 CONFIG_TEST_DATA = {
     "default_values": {
         "gemini_api_key": None,
@@ -42,7 +42,7 @@ CONFIG_TEST_DATA = {
         "log_format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         "app_name": "Factory AI Assistant API",
         "app_version": "1.0.0",
-        "app_description": "Unityアプリと連携するGemini AIアシスタントAPI",
+        "app_description": "Gemini AI assistant API for Unity app integration",
         "environment": "development",
         "debug": False,
         "gemini_model": "gemini-1.5-pro",

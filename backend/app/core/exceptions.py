@@ -2,7 +2,7 @@ from fastapi import HTTPException
 
 
 class FactoryAIException(Exception):
-    """Factory AI Assistantの基本例外クラス"""
+    """Base exception class for Factory AI Assistant"""
     
     def __init__(self, message: str, status_code: int = 500, details: dict = None):
         self.message = message
@@ -12,21 +12,21 @@ class FactoryAIException(Exception):
 
 
 class GeminiAPIException(FactoryAIException):
-    """Gemini API関連の例外"""
+    """Gemini API related exception"""
     
     def __init__(self, message: str, details: dict = None):
         super().__init__(message, status_code=503, details=details)
 
 
 class ValidationException(FactoryAIException):
-    """バリデーション関連の例外"""
+    """Validation related exception"""
     
     def __init__(self, message: str, details: dict = None):
         super().__init__(message, status_code=422, details=details)
 
 
 class ConfigurationException(FactoryAIException):
-    """設定関連の例外"""
+    """Configuration related exception"""
     
     def __init__(self, message: str, details: dict = None):
         super().__init__(message, status_code=500, details=details)

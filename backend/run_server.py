@@ -3,13 +3,13 @@ import os
 import sys
 from dotenv import load_dotenv
 
-# .envファイルを読み込み
+# Load .env file
 load_dotenv()
 
 def main():
-    """サーバーを起動するメイン関数"""
+    """Main function to start server"""
     try:
-        # 環境変数から設定を読み込み
+        # Load configuration from environment variables
         host = os.getenv("SERVER_HOST", "0.0.0.0")
         port = int(os.getenv("SERVER_PORT", "8000"))
         
@@ -17,7 +17,7 @@ def main():
         print("API Documentation: http://localhost:8000/docs")
         print("Health Check: http://localhost:8000/health")
         
-        # サーバー起動
+        # Start server
         uvicorn.run(
             "app.main:app",
             host=host,

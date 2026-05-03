@@ -15,11 +15,11 @@ async def chat(
     gemini_service: GeminiService = Depends(get_gemini_service)
 ):
     """
-    チャットエンドポイント
-    ユーザーメッセージを受け取り、Gemini AIからの応答を返す
+    Chat endpoint
+    Receives user messages and returns responses from Gemini AI
     """
     try:
-        # Geminiサービスを使用して応答を生成
+        # Generate response using Gemini service
         response_text = await gemini_service.generate_response(
             message=request.message,
             context=request.context
@@ -37,5 +37,5 @@ async def chat(
         logger.error(f"Chat endpoint error: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail="チャット処理中にエラーが発生しました"
+            detail="An error occurred during chat processing"
         )

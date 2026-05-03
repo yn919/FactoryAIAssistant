@@ -1,11 +1,11 @@
-"""テストヘルパー関数"""
+"""Test helper functions"""
 from unittest.mock import Mock, AsyncMock
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
 
 def create_mock_request(method: str = "GET", path: str = "/") -> Mock:
-    """FastAPIリクエストのモックを作成"""
+    """Create mock of FastAPI request"""
     mock_request = Mock(spec=Request)
     mock_request.method = method
     mock_request.url = Mock()
@@ -14,7 +14,7 @@ def create_mock_request(method: str = "GET", path: str = "/") -> Mock:
 
 
 def create_mock_json_response(status_code: int = 200, content: dict = None) -> Mock:
-    """JSONレスポンスのモックを作成"""
+    """Create mock of JSON response"""
     mock_response = Mock(spec=JSONResponse)
     mock_response.status_code = status_code
     mock_response.body = str(content or {}).encode()
@@ -22,7 +22,7 @@ def create_mock_json_response(status_code: int = 200, content: dict = None) -> M
 
 
 def assert_json_response_contains(response: JSONResponse, expected_content: str, expected_status: int = None):
-    """JSONレスポンスの内容を検証するヘルパー関数"""
+    """Helper function to verify JSON response content"""
     if expected_status:
         assert response.status_code == expected_status
     
@@ -31,7 +31,7 @@ def assert_json_response_contains(response: JSONResponse, expected_content: str,
 
 
 def create_mock_exception(message: str, status_code: int = 500, details: dict = None):
-    """例外のモックを作成"""
+    """Create mock of exception"""
     from app.core.exceptions import FactoryAIException
     return FactoryAIException(
         message=message,
@@ -40,8 +40,8 @@ def create_mock_exception(message: str, status_code: int = 500, details: dict = 
     )
 
 
-def create_mock_gemini_service(response_text: str = "テスト応答", health_check_result: bool = True):
-    """Geminiサービスのモックを作成"""
+def create_mock_gemini_service(response_text: str = "Test response", health_check_result: bool = True):
+    """Create mock of Gemini service"""
     from app.services.gemini_service import GeminiService
     
     mock_service = Mock(spec=GeminiService)
@@ -50,8 +50,8 @@ def create_mock_gemini_service(response_text: str = "テスト応答", health_ch
     return mock_service
 
 
-def create_mock_gemini_model(response_text: str = "テスト応答", side_effect: Exception = None):
-    """Geminiモデルのモックを作成"""
+def create_mock_gemini_model(response_text: str = "Test response", side_effect: Exception = None):
+    """Create mock of Gemini model"""
     mock_model = Mock()
     mock_response = Mock()
     mock_response.text = response_text

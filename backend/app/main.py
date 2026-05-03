@@ -9,12 +9,12 @@ from app.middleware.cors import add_cors_middleware
 from app.middleware.error_handler import factory_ai_exception_handler, general_exception_handler
 from app.api.v1.api import api_router
 
-# ロギング設定
+# Logging setup
 logger = setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # 起動時の処理
+    # Startup process
     try:
         settings = get_settings()
         logger.info(f"FastAPI server starting up on {settings.server_host}:{settings.server_port}")
@@ -23,10 +23,10 @@ async def lifespan(app: FastAPI):
         logger.error(f"Startup failed: {str(e)}")
         raise
     finally:
-        # シャットダウン時の処理
+        # Shutdown process
         logger.info("FastAPI server shutting down...")
 
-# FastAPIアプリケーション作成
+# FastAPI application creation
 settings = get_settings()
 app = FastAPI(
     title=settings.app_name,
@@ -35,14 +35,14 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# ミドルウェアの設定
+# Middleware configuration
 add_cors_middleware(app)
 
-# 例外ハンドラーの登録
+# Exception handler registration
 app.add_exception_handler(FactoryAIException, factory_ai_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
-# APIルーターの登録
+# API router registration
 app.include_router(api_router)
 
 if __name__ == "__main__":
