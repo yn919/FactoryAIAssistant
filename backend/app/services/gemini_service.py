@@ -17,40 +17,40 @@ class GeminiService:
     
     async def generate_response(self, message: str, context: Optional[str] = None) -> str:
         """
-        Gemini APIを使用してチャットレスポンスを生成
+        Generate chat response using Gemini API
         
         Args:
-            message: ユーザーメッセージ
-            context: オプションのコンテキスト情報
+            message: User message
+            context: Optional context information
             
         Returns:
-            生成されたAIレスポンス
+            Generated AI response
         """
         try:
-            # コンテキストがある場合はプロンプトに追加
+            # Add context to prompt if available
             full_prompt = message
             if context:
-                full_prompt = f"コンテキスト: {context}\n\nメッセージ: {message}"
+                full_prompt = f"Context: {context}\n\nMessage: {message}"
             
-            # Gemini APIを呼び出し
+            # Call Gemini API
             response = self.model.generate_content(full_prompt)
             
             if response.text:
                 return response.text.strip()
             else:
                 logger.warning("Empty response from Gemini API")
-                return "申し訳ありません。応答を生成できませんでした。"
+                return "Sorry, unable to generate response."
                 
         except Exception as e:
             logger.error(f"Error generating response with Gemini: {str(e)}")
-            raise GeminiAPIException(f"Gemini API呼び出しに失敗しました: {str(e)}")
+            raise GeminiAPIException(f"Gemini API call failed: {str(e)}")
     
     def health_check(self) -> bool:
         """
-        Gemini APIのヘルスチェック
+        Gemini API health check
         
         Returns:
-            APIが利用可能な場合はTrue
+            True if API is available
         """
         try:
             response = self.model.generate_content("test")

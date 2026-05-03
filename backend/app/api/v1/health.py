@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.get("/health", response_model=HealthResponse, tags=["Health"])
 async def health_check(gemini_service: GeminiService = Depends(get_gemini_service)):
-    """ヘルスチェックエンドポイント"""
+    """Health check endpoint"""
     try:
         is_healthy = gemini_service.health_check()
         if is_healthy:

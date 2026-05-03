@@ -4,40 +4,40 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    """アプリケーション設定"""
+    """Application settings"""
     
-    # API設定
+    # API configuration
     gemini_api_key: Optional[str] = None
     server_host: str = "0.0.0.0"
     server_port: int = 8000
     
-    # CORS設定
+    # CORS configuration
     cors_origins: List[str] = ["*"]
     cors_allow_credentials: bool = True
     cors_allow_methods: List[str] = ["*"]
     cors_allow_headers: List[str] = ["*"]
     
-    # ロギング設定
+    # Logging configuration
     log_level: str = "INFO"
     log_format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     
-    # アプリケーション設定
+    # Application configuration
     app_name: str = "Factory AI Assistant API"
     app_version: str = "1.0.0"
-    app_description: str = "Unityアプリと連携するGemini AIアシスタントAPI"
+    app_description: str = "Gemini AI assistant API for Unity app integration"
     
-    # 環境設定
+    # Environment configuration
     environment: str = "development"
     debug: bool = False
     
-    # Gemini API設定
+    # Gemini API configuration
     gemini_model: str = "gemini-1.5-pro"
     gemini_temperature: Optional[float] = None
     gemini_max_tokens: Optional[int] = None
     
     @classmethod
     def validate(cls):
-        """必須設定のバリデーション"""
+        """Required settings validation"""
         if not cls.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY is required. Please set it in .env file.")
     
@@ -49,10 +49,10 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    """設定インスタンスの取得（キャッシュ付き）"""
+    """Get settings instance (cached)"""
     return Settings()
 
 
-# 後方互換性のためのエイリアス（遅延読み込み）
+# Alias for backward compatibility (lazy loading)
 def get_cached_settings():
     return get_settings()

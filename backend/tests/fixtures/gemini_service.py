@@ -5,7 +5,7 @@ from app.core.config import Settings
 
 @pytest.fixture
 def test_settings():
-    """テスト用設定"""
+    """Test settings"""
     return Settings(
         gemini_api_key="mock_test_api_key_12345",
         server_host="localhost",
@@ -21,11 +21,11 @@ def test_settings():
 
 @pytest.fixture
 def mock_gemini_service():
-    """Geminiサービスの完全なモック"""
+    """Complete mock of Gemini service"""
     from app.services.gemini_service import GeminiService
     
     mock_service = Mock(spec=GeminiService)
-    mock_service.generate_response = AsyncMock(return_value="テスト応答メッセージ")
+    mock_service.generate_response = AsyncMock(return_value="Test response message")
     mock_service.health_check = Mock(return_value=True)
     
     return mock_service
@@ -33,14 +33,14 @@ def mock_gemini_service():
 
 @pytest.fixture
 def mock_gemini_response():
-    """Gemini APIのモックレスポンス"""
+    """Mock response from Gemini API"""
     mock_response = Mock()
-    mock_response.text = "これはテスト応答です"
+    mock_response.text = "This is test response"
     return mock_response
 
 
 @pytest.fixture(autouse=True)
 def mock_settings(test_settings):
-    """設定をモック"""
+    """Mock settings"""
     with patch('app.core.config.get_settings', return_value=test_settings):
         yield

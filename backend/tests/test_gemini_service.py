@@ -1,4 +1,4 @@
-"""Geminiサービスのテスト"""
+"""Tests for Gemini service"""
 import pytest
 from unittest.mock import Mock, patch
 from app.services.gemini_service import GeminiService
@@ -7,7 +7,7 @@ from tests.data.test_messages import GEMINI_TEST_MESSAGES
 
 
 def test_gemini_service_init_success(mock_settings):
-    """Geminiサービスの初期化成功テスト"""
+    """Test successful Gemini service initialization"""
     with patch('app.services.gemini_service.genai') as mock_genai:
         mock_model = mock_genai.GenerativeModel.return_value
         
@@ -20,7 +20,7 @@ def test_gemini_service_init_success(mock_settings):
 
 
 def test_gemini_service_init_no_api_key():
-    """APIキーがない場合の初期化失敗テスト"""
+    """Test initialization failure when API key is missing"""
     from app.core.config import Settings
     settings = Settings(gemini_api_key=None)
     
@@ -30,7 +30,7 @@ def test_gemini_service_init_no_api_key():
 
 @pytest.mark.asyncio
 async def test_generate_response_success(mock_settings, mock_model):
-    """応答生成成功テスト"""
+    """Test successful response generation"""
     with patch('app.services.gemini_service.genai') as mock_genai:
         mock_genai.GenerativeModel.return_value = mock_model
         
@@ -44,7 +44,7 @@ async def test_generate_response_success(mock_settings, mock_model):
 
 @pytest.mark.asyncio
 async def test_generate_response_with_context(mock_settings, mock_model):
-    """コンテキスト付き応答生成テスト"""
+    """Test response generation with context"""
     with patch('app.services.gemini_service.genai') as mock_genai:
         mock_genai.GenerativeModel.return_value = mock_model
         
@@ -61,7 +61,7 @@ async def test_generate_response_with_context(mock_settings, mock_model):
 
 @pytest.mark.asyncio
 async def test_generate_response_empty_response(mock_settings):
-    """空レスポンスのテスト"""
+    """Test empty response"""
     with patch('app.services.gemini_service.genai') as mock_genai:
         mock_model = mock_genai.GenerativeModel.return_value
         mock_response = mock_model.generate_content.return_value
@@ -70,24 +70,24 @@ async def test_generate_response_empty_response(mock_settings):
         service = GeminiService(mock_settings)
         result = await service.generate_response(GEMINI_TEST_MESSAGES["simple"])
         
-        assert result == "申し訳ありません。応答を生成できませんでした。"
+        assert result == "Sorry, unable to generate response."
 
 
 @pytest.mark.asyncio
 async def test_generate_response_api_error(mock_settings):
-    """APIエラーのテスト"""
+    """Test API error"""
     with patch('app.services.gemini_service.genai') as mock_genai:
         mock_model = mock_genai.GenerativeModel.return_value
         mock_model.generate_content.side_effect = Exception("API Error")
         
         service = GeminiService(mock_settings)
         
-        with pytest.raises(GeminiAPIException, match="Gemini API呼び出しに失敗しました"):
+        with pytest.raises(GeminiAPIException, match="Gemini API call failed"):
             await service.generate_response(GEMINI_TEST_MESSAGES["simple"])
 
 
 def test_health_check_success(mock_settings):
-    """ヘルスチェック成功テスト"""
+    """Test successful health check"""
     with patch('app.services.gemini_service.genai') as mock_genai:
         mock_model = mock_genai.GenerativeModel.return_value
         mock_model.generate_content.return_value = Mock()
@@ -100,7 +100,7 @@ def test_health_check_success(mock_settings):
 
 
 def test_health_check_failure(mock_settings):
-    """ヘルスチェック失敗テスト"""
+    """Test health check failure"""
     with patch('app.services.gemini_service.genai') as mock_genai:
         mock_model = mock_genai.GenerativeModel.return_value
         mock_model.generate_content.side_effect = Exception("Health check failed")
