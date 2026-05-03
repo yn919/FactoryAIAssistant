@@ -1,10 +1,18 @@
 import uvicorn
 import os
 import sys
+import logging
 from dotenv import load_dotenv
 
 # Load .env file
 load_dotenv()
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 def main():
     """Main function to start server"""
@@ -13,9 +21,9 @@ def main():
         host = os.getenv("SERVER_HOST", "0.0.0.0")
         port = int(os.getenv("SERVER_PORT", "8000"))
         
-        print(f"Starting server on {host}:{port}")
-        print("API Documentation: http://localhost:8000/docs")
-        print("Health Check: http://localhost:8000/health")
+        logger.info(f"Starting server on {host}:{port}")
+        logger.info("API Documentation: http://localhost:8000/docs")
+        logger.info("Health Check: http://localhost:8000/health")
         
         # Start server
         uvicorn.run(
@@ -27,9 +35,9 @@ def main():
         )
         
     except KeyboardInterrupt:
-        print("\nServer stopped by user")
+        logger.info("Server stopped by user")
     except Exception as e:
-        print(f"Error starting server: {str(e)}")
+        logger.error(f"Error starting server: {str(e)}")
         sys.exit(1)
 
 if __name__ == "__main__":
