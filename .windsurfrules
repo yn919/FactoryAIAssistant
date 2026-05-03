@@ -1,0 +1,38 @@
+# ルートフォルダ - プロジェクト分岐ルール
+
+## 概要
+このリポジトリには2つの主要なプロジェクトが含まれています：
+- backend/: Python FastAPIバックエンドプロジェクト
+- FactoryAIAssistant/: Unity C#フロントエンドプロジェクト
+
+## プロジェクト分岐ルール
+
+### backend/ フォルダで作業する場合
+- 言語: Python
+- フレームワーク: FastAPI
+- テスト: pytest
+- コーディング規約: PEP 8
+- 依存管理: requirements.txt
+- backend/.windsurfrules のルールに従う
+
+### FactoryAIAssistant/ フォルダで作業する場合
+- 言語: C#
+- エンジン: Unity 2022.3 LTS
+- コーディング規約: C#標準
+- パッケージ管理: Unity Package Manager
+- FactoryAIAssistant/.windsurfrules のルールに従う
+
+### ルートフォルダで作業する場合
+- README.mdの更新
+- .gitignoreの管理
+- GitHub Actionsの設定
+- プロジェクト全体の調整
+
+## 共通ルール
+- プルリクエストには説明を追加
+- コードレビューを必ず実施
+
+## 注意事項
+- 各プロジェクトの独立性を維持
+- プロジェクト間の依存を最小化
+- 設定ファイルは各プロジェクト内で管理
