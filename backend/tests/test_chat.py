@@ -184,7 +184,7 @@ def test_health_endpoint_unhealthy():
     try:
         response = client.get("/api/v1/health")
         assert response.status_code == 503
-        assert "Gemini API is unavailable" in response.json()["detail"]
+        assert "Service unavailable" in response.json()["detail"]
     finally:
         app.dependency_overrides.clear()
 
