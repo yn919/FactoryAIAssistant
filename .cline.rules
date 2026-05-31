@@ -5,12 +5,6 @@
 - backend/: Python FastAPIバックエンドプロジェクト
 - FactoryAIAssistant/: Unity C#フロントエンドプロジェクト
 
-## ルートフォルダでの作業
-- README.mdの更新
-- .gitignoreの管理
-- GitHub Actionsの設定
-- プロジェクト全体の調整
-
 ## 共通ルール
 - プルリクエストには説明を追加
 - コードレビューを必ず実施
