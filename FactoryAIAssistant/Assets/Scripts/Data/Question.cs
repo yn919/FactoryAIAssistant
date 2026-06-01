@@ -3,10 +3,8 @@ namespace FactoryAIAssistant.Data
 {
     // チャットデータを表すクラス
     [System.Serializable]
-    public class ChatData
+    public class Question
     {
         public string message;
-        public string sender;
-        public string timestamp;
     }
 }
