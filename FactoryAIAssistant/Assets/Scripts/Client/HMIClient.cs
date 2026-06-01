@@ -43,7 +43,7 @@ namespace FactoryAIAssistant.Client
                 var data = JsonUtility.FromJson<SensorData>(request.downloadHandler.text);
                 tempText.text = $"温度：{data.temperature:F1} ℃";
                 pressureText.text = $"圧力：{data.pressure:F2} MPa";
-                statusText.text = $"振動：{data.vibration:F2} mm/s";
+                vibrationText.text = $"振動：{data.vibration:F2} mm/s";
                 statusText.text = data.status == "warning" ? "警告" : "正常";
                 statusText.color = data.status == "warning" ? Color.red : Color.green;
             }
@@ -51,20 +51,20 @@ namespace FactoryAIAssistant.Client
 
         public void OnAskButton()
         {
-            
+            if (!string.IsNullOrEmpty(inputField.text)) StartCoroutine(AskAI(inputField.text));
         }
 
-        IEnumerator AskAI(string messeage)
+        private IEnumerator AskAI(string messeage)
         {
             chatLog.text += $"\n<color=cyan>YOU:</color> {messeage}\n";
-            string json = JsonUtility.ToJson(new Question(){message = messeage});
+            var json = JsonUtility.ToJson(new Question { message = messeage });
 
-            using UnityWebRequest request = UnityWebRequest.Put($"{API_BASE}/ask", "POST");
-            byte[] body = Encoding.UTF8.GetBytes(json);
+            using var request = UnityWebRequest.Put($"{API_BASE}/ask", "POST");
+            var body = Encoding.UTF8.GetBytes(json);
             request.uploadHandler = new UploadHandlerRaw(body);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
-            
+
             yield return request.SendWebRequest();
 
             if (request.result == UnityWebRequest.Result.Success)
