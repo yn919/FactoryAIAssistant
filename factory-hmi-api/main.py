@@ -31,6 +31,9 @@ model = genai.GenerativeModel(
 class Question(BaseModel):
     message: str
 
+def get_model():
+    return model
+
 @app.post("/ask")
 def ask(question: Question):
     response = model.generate_content(question.message)

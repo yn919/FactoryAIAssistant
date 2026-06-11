@@ -1,6 +1,17 @@
 import pytest
 from fastapi.testclient import TestClient
-from main import app
+from unittest.mock import MagicMock
+from main import app, get_model
+
+class MockResponse:
+    text = "mocked answer"
+
+def mock_model():
+    mock = MagicMock()
+    mock.generate_content.return_value = MockResponse()
+    return mock
+
+app.dependency_overrides[get_model] = mock_model
 
 client = TestClient(app)
 
@@ -17,7 +28,7 @@ def test_sensor_normal_status():
     assert "pressure" in data
     assert "vibration" in data
     assert "status" in data
-    assert data["status"] == "normal" or data["status"] == "warning"
+    assert data["status"] in ["normal", "warning"]
     assert isinstance(data["temperature"], float)
     assert isinstance(data["pressure"], float)
     assert isinstance(data["vibration"], float)
@@ -27,15 +38,14 @@ def test_ask_ai_normal_case():
     assert response.status_code == 200
     data = response.json()
     assert "answer" in data
-    assert isinstance(data["answer"], str)
-    assert len(data["answer"]) > 0
+    assert data["answer"] == "mocked answer"
 
 def test_ask_ai_empty_message():
     response = client.post("/ask", json={"message": ""})
-    assert response.status_code == 200  # FastAPI's default for empty string is 200 if valid pydantic
+    assert response.status_code == 200
     data = response.json()
     assert "answer" in data
-    assert isinstance(data["answer"], str)
+    assert data["answer"] == "mocked answer"
 
 def test_ask_ai_long_message():
     long_message = "これは非常に長いメッセージです。" * 100
@@ -43,4 +53,4 @@ def test_ask_ai_long_message():
     assert response.status_code == 200
     data = response.json()
     assert "answer" in data
-    assert isinstance(data["answer"], str)
+    assert data["answer"] == "mocked answer"
