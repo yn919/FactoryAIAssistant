@@ -2,8 +2,6 @@ using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
-using FactoryAIAssistant.Client;
-using FactoryAIAssistant.Data;
 using TMPro;
 using UnityEngine.UI;
 

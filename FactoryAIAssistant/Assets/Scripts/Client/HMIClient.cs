@@ -58,12 +58,12 @@ namespace FactoryAIAssistant.Client
             if (!string.IsNullOrEmpty(inputField.text)) StartCoroutine(AskAI(inputField.text));
         }
 
-        private IEnumerator AskAI(string messeage)
+        private IEnumerator AskAI(string message)
         {
-            AddMessage(messeage, true);
+            AddMessage(message, true);
             inputField.text = string.Empty;
             
-            var json = JsonUtility.ToJson(new Question { message = messeage });
+            var json = JsonUtility.ToJson(new Question { message = message });
 
             using var request = UnityWebRequest.Put($"{API_BASE}/ask", "POST");
             var body = Encoding.UTF8.GetBytes(json);
