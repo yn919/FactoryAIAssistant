@@ -117,38 +117,3 @@ jobs:
         with:
           name: Coverage Results (Unity EditMode)
           path: FactoryAIAssistant/coverage
-
-  runs-on: ubuntu-latest
-
-  steps:
-    - uses: actions/checkout@v4
-      with:
-        lfs: true
-
-    - uses: actions/cache@v3
-      with:
-        path: Library
-        key: Unity-6000.4.5f1-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-        restore-keys: |
-          Unity-6000.4.5f1-
-          Unity-
-
-    - uses: game-ci/unity-test-runner@v4
-      id: testRunner
-      with:
-        projectPath: FactoryAIAssistant
-        unityVersion: 6000.4.5f1
-        githubToken: ${{ secrets.GITHUB_TOKEN }}
-        testMode: EditMode
-        artifactsPath: FactoryAIAssistant/artifacts
-        coveragePath: FactoryAIAssistant/coverage
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: Test Results (Unity EditMode)
-        path: FactoryAIAssistant/artifacts
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: Coverage Results (Unity EditMode)
-        path: FactoryAIAssistant/coverage
