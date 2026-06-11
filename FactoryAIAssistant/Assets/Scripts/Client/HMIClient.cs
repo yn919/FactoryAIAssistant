@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace FactoryAIAssistant.Client
 {
-    // バックエンドとの通信を処理するクライアントクラス
+    // Client class that handles communication with the backend
     public class HMIClient : MonoBehaviour
     {
         private const string API_BASE = "https://localhost:5001";

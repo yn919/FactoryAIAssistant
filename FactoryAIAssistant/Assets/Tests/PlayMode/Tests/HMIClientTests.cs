@@ -1,8 +1,8 @@
 using System.Collections;
 using NUnit.Framework;
+using TMPro;
 using UnityEngine;
 using UnityEngine.TestTools;
-using TMPro;
 using UnityEngine.UI;
 
 namespace FactoryAIAssistant.Client.Tests
@@ -18,7 +18,7 @@ namespace FactoryAIAssistant.Client.Tests
             hmiClientGameObject = new GameObject();
             hmiClient = hmiClientGameObject.AddComponent<HMIClient>();
 
-            // モックのUI要素を設定
+            // Set up mock UI elements
             hmiClient.inputField = new GameObject().AddComponent<TMP_InputField>();
             hmiClient.chatContent = new GameObject().transform;
             hmiClient.userMessagePrefab = new GameObject();
@@ -36,18 +36,18 @@ namespace FactoryAIAssistant.Client.Tests
             Object.Destroy(hmiClientGameObject);
         }
 
-        // GetSensorコルーチンの正常系テスト
+        // Normal-case test for GetSensor coroutine
         [UnityTest]
         public IEnumerator GetSensor_Success()
         {
-            // UnityWebRequestのモックは困難なため、ここではコルーチンがエラーを発生させずに完了することを確認
-            // 実際のAPI通信はモックサーバーなどを使用する必要がある
+            // Since mocking UnityWebRequest is difficult, here we only verify that the coroutine completes without throwing an error
+            // Actual API communication would require using a mock server or similar
             yield return hmiClient.StartCoroutine("GetSensor");
-            // 現状はエラーが発生しないことのみ確認
+            // For now, only confirm that no error occurs
             Assert.DoesNotThrow(() => { });
         }
 
-        // OnAskButtonの正常系テスト（メッセージが空ではない場合）
+        // Normal-case test for OnAskButton (when the message is not empty)
         [UnityTest]
         public IEnumerator OnAskButton_MessageNotEmpty_CallsAskAI()
         {
@@ -56,27 +56,27 @@ namespace FactoryAIAssistant.Client.Tests
 
             hmiClient.aiMessagePrefab = new GameObject();
             hmiClient.aiMessagePrefab.AddComponent<TextMeshProUGUI>();
-            
+
             var contentGameObject = new GameObject();
             var contentTransform = contentGameObject.AddComponent<RectTransform>();
             hmiClient.scrollRect.content = contentTransform;
-            
+
             hmiClient.inputField.text = "テストメッセージ";
-            
+
             hmiClient.OnAskButton();
-            // AskAIコルーチンが開始されることを確認するための直接的なアサートは困難
-            // ここではInputFiledがクリアされることを確認することで間接的に検証
+            // It is difficult to directly assert that the AskAI coroutine has started
+            // Instead, we indirectly verify it by checking that the InputField is cleared
             Assert.IsEmpty(hmiClient.inputField.text);
             yield return null;
         }
 
-        // OnAskButtonの異常系テスト（メッセージが空の場合）
+        // Error-case test for OnAskButton (when the message is empty)
         [UnityTest]
         public IEnumerator OnAskButton_MessageEmpty_DoesNotCallAskAI()
         {
             hmiClient.inputField.text = string.Empty;
             hmiClient.OnAskButton();
-            // AskAIが呼び出されないことを確認する直接的な方法がないため、InputFiledが空のままであることを確認
+            // Since there is no direct way to confirm AskAI was not called, we verify that the InputField remains empty
             Assert.IsEmpty(hmiClient.inputField.text);
             yield return null;
         }
