@@ -4,6 +4,7 @@ using FactoryAIAssistant.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 namespace FactoryAIAssistant.Client
 {
@@ -13,11 +14,14 @@ namespace FactoryAIAssistant.Client
         private const string API_BASE = "https://localhost:5001";
 
         public TMP_InputField inputField;
-        public TMP_Text chatLog;
+        public Transform chatContent;
+        public GameObject userMessagePrefab;
+        public GameObject aiMessagePrefab;
         public TMP_Text tempText;
         public TMP_Text pressureText;
         public TMP_Text vibrationText;
         public TMP_Text statusText;
+        public ScrollRect scrollRect;
 
         private void Start()
         {
@@ -56,7 +60,9 @@ namespace FactoryAIAssistant.Client
 
         private IEnumerator AskAI(string messeage)
         {
-            chatLog.text += $"\n<color=cyan>YOU:</color> {messeage}\n";
+            AddMessage(messeage, true);
+            inputField.text = string.Empty;
+            
             var json = JsonUtility.ToJson(new Question { message = messeage });
 
             using var request = UnityWebRequest.Put($"{API_BASE}/ask", "POST");
@@ -70,14 +76,24 @@ namespace FactoryAIAssistant.Client
             if (request.result == UnityWebRequest.Result.Success)
             {
                 var data = JsonUtility.FromJson<AnswerData>(request.downloadHandler.text);
-                chatLog.text += $"<color=yellow>AI:</color> {data.message}\n";
+                AddMessage(data.message, false);
             }
             else
             {
-                chatLog.text += $"<color=red>Error: {request.error}</color>\n";
+                AddMessage($"エラー：{request.error}", false);
             }
 
             inputField.text = string.Empty;
+        }
+
+        void AddMessage(string message, bool isMine)
+        {
+            GameObject prefab = isMine ? userMessagePrefab : aiMessagePrefab;
+            GameObject msgObj = Instantiate(prefab, chatContent);
+            msgObj.GetComponentInChildren<TMP_Text>().text = message;
+
+            Canvas.ForceUpdateCanvases();
+            scrollRect.verticalNormalizedPosition = 0f;
         }
     }
 }
