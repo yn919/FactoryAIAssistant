@@ -1,6 +1,6 @@
 import os
 import random
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -35,7 +35,7 @@ def get_model():
     return model
 
 @app.post("/ask")
-def ask(question: Question):
+def ask(question: Question, model=Depends(get_model)):
     response = model.generate_content(question.message)
     return {"answer": response.text}
 
