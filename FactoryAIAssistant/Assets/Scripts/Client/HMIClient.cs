@@ -62,7 +62,7 @@ namespace FactoryAIAssistant.Client
         {
             AddMessage(message, true);
             inputField.text = string.Empty;
-            
+
             var json = JsonUtility.ToJson(new Question { message = message });
 
             using var request = UnityWebRequest.Put($"{API_BASE}/ask", "POST");
@@ -86,10 +86,10 @@ namespace FactoryAIAssistant.Client
             inputField.text = string.Empty;
         }
 
-        void AddMessage(string message, bool isMine)
+        private void AddMessage(string message, bool isMine)
         {
-            GameObject prefab = isMine ? userMessagePrefab : aiMessagePrefab;
-            GameObject msgObj = Instantiate(prefab, chatContent);
+            var prefab = isMine ? userMessagePrefab : aiMessagePrefab;
+            var msgObj = Instantiate(prefab, chatContent);
             msgObj.GetComponentInChildren<TMP_Text>().text = message;
 
             Canvas.ForceUpdateCanvases();

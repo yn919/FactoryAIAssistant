@@ -107,18 +107,18 @@ jobs:
         id: testRunner
         with:
           projectPath: FactoryAIAssistant
-          unityVersion: 2023.2.19f1
+          unityVersion: 6000.4.5f1
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          testMode: PlayMode
+          testMode: EditMode
           artifactsPath: FactoryAIAssistant/artifacts
           coveragePath: FactoryAIAssistant/coverage
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Test Results (Unity PlayMode)
+          name: Test Results (Unity EditMode)
           path: FactoryAIAssistant/artifacts
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Coverage Results (Unity PlayMode)
+          name: Coverage Results (Unity EditMode)
           path: FactoryAIAssistant/coverage
