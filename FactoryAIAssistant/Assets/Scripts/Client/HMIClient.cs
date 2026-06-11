@@ -4,20 +4,24 @@ using FactoryAIAssistant.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 namespace FactoryAIAssistant.Client
 {
-    // バックエンドとの通信を処理するクライアントクラス
+    // Client class that handles communication with the backend
     public class HMIClient : MonoBehaviour
     {
         private const string API_BASE = "https://localhost:5001";
 
         public TMP_InputField inputField;
-        public TMP_Text chatLog;
+        public Transform chatContent;
+        public GameObject userMessagePrefab;
+        public GameObject aiMessagePrefab;
         public TMP_Text tempText;
         public TMP_Text pressureText;
         public TMP_Text vibrationText;
         public TMP_Text statusText;
+        public ScrollRect scrollRect;
 
         private void Start()
         {
@@ -54,10 +58,12 @@ namespace FactoryAIAssistant.Client
             if (!string.IsNullOrEmpty(inputField.text)) StartCoroutine(AskAI(inputField.text));
         }
 
-        private IEnumerator AskAI(string messeage)
+        private IEnumerator AskAI(string message)
         {
-            chatLog.text += $"\n<color=cyan>YOU:</color> {messeage}\n";
-            var json = JsonUtility.ToJson(new Question { message = messeage });
+            AddMessage(message, true);
+            inputField.text = string.Empty;
+
+            var json = JsonUtility.ToJson(new Question { message = message });
 
             using var request = UnityWebRequest.Put($"{API_BASE}/ask", "POST");
             var body = Encoding.UTF8.GetBytes(json);
@@ -70,14 +76,24 @@ namespace FactoryAIAssistant.Client
             if (request.result == UnityWebRequest.Result.Success)
             {
                 var data = JsonUtility.FromJson<AnswerData>(request.downloadHandler.text);
-                chatLog.text += $"<color=yellow>AI:</color> {data.message}\n";
+                AddMessage(data.message, false);
             }
             else
             {
-                chatLog.text += $"<color=red>Error: {request.error}</color>\n";
+                AddMessage($"エラー：{request.error}", false);
             }
 
             inputField.text = string.Empty;
+        }
+
+        private void AddMessage(string message, bool isMine)
+        {
+            var prefab = isMine ? userMessagePrefab : aiMessagePrefab;
+            var msgObj = Instantiate(prefab, chatContent);
+            msgObj.GetComponentInChildren<TMP_Text>().text = message;
+
+            Canvas.ForceUpdateCanvases();
+            scrollRect.verticalNormalizedPosition = 0f;
         }
     }
 }

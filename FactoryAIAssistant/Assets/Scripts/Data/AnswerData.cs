@@ -1,7 +1,9 @@
+using System;
+
 namespace FactoryAIAssistant.Data
 {
-    // バックエンドから受け取るチャットレスポンスデータを表すクラス
-    [System.Serializable]
+    // Class representing the chat response data received from the backend
+    [Serializable]
     public class AnswerData
     {
         public string message;

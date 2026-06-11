@@ -1,8 +1,9 @@
-// FactoryAIAssistant/Assets/Scripts/Data.cs
+using System;
+
 namespace FactoryAIAssistant.Data
 {
-    // チャットデータを表すクラス
-    [System.Serializable]
+    // Class representing the question payload sent to the backend
+    [Serializable]
     public class Question
     {
         public string message;

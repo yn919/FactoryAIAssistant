@@ -1,6 +1,9 @@
+using System;
+
 namespace FactoryAIAssistant.Data
 {
-    [System.Serializable]
+    // Class representing sensor data received from the backend
+    [Serializable]
     public class SensorData
     {
         public float temperature;
