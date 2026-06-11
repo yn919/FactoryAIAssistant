@@ -1,8 +1,8 @@
 using System.Collections;
 using NUnit.Framework;
+using TMPro;
 using UnityEngine;
 using UnityEngine.TestTools;
-using TMPro;
 using UnityEngine.UI;
 
 namespace FactoryAIAssistant.Client.Tests
@@ -74,18 +74,19 @@ namespace FactoryAIAssistant.Client.Tests
         [UnityTest]
         public IEnumerator AddMessage_AddsMessageToChatContent()
         {
-            int initialChildCount = hmiClient.chatContent.childCount;
+            var initialChildCount = hmiClient.chatContent.childCount;
             // AddMessageはprivateなのでリフレクションで呼び出すか、publicなメソッドを介してテスト
             // 今回はpublicなOnAskButton()を介して呼び出されるAskAI()がAddMessageを呼び出すため、そちらで検証
             hmiClient.inputField.text = "User Message";
             hmiClient.OnAskButton();
             yield return null; // AskAIコルーチンが実行されるのを待つ
-            
+
             Assert.Greater(hmiClient.chatContent.childCount, initialChildCount);
-            
+
             // AIからの応答も確認したい場合は、AskAIが正常終了することをモックする必要がある
             // 現状ではユーザーメッセージのみ確認
-            TextMeshProUGUI userMsgText = hmiClient.chatContent.GetChild(hmiClient.chatContent.childCount - 1).GetComponentInChildren<TextMeshProUGUI>();
+            var userMsgText = hmiClient.chatContent.GetChild(hmiClient.chatContent.childCount - 1)
+                .GetComponentInChildren<TextMeshProUGUI>();
             Assert.AreEqual("User Message", userMsgText.text);
 
             yield return null;
