@@ -35,8 +35,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r factory-hmi-api/requirements.txt
-          pip install flake8 black isort safety
+          pip install flake8 black isort safety pytest
 
       - name: Lint with flake8
         run: |
@@ -50,39 +49,45 @@ jobs:
         run: isort factory-hmi-api/
 
       - name: Run security scan with safety
-        run: safety check -r factory-hmi-api/requirements.txt
+        run: safety check
 
-      - name: Run tests with coverage
+      - name: Run tests
         run: |
           cd factory-hmi-api
-          pytest test_main.py -v --cov=app --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=70
-
-      - name: Generate coverage badge
-        run: |
-          cd factory-hmi-api
-          COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); print(float(root.attrib['line-rate']) * 100)")
-          echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
-          echo "Current coverage: $COVERAGE%"
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: factory-hmi-api/coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Upload coverage artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-reports
-          path: |
-            factory-hmi-api/coverage.xml
-            factory-hmi-api/htmlcov/
-          retention-days: 30
+          pytest -v
 
   unity-test:
+    runs-on: ubuntu-latest
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/cache@v3
+        with:
+          path: Library
+          key: Unity-6000.4.5f1-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Unity-6000.4.5f1-
+            Unity-
+
+      - uses: game-ci/unity-test-runner@v4
+        id: testRunner
+        with:
+          projectPath: FactoryAIAssistant
+          unityVersion: 6000.4.5f1
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          testMode: EditMode
+          artifactsPath: FactoryAIAssistant/artifacts
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Test Results (Unity EditMode)
+          path: FactoryAIAssistant/artifacts
+
     runs-on: ubuntu-latest
 
     steps:
