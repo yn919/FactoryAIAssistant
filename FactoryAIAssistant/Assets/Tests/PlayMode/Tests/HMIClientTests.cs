@@ -51,7 +51,18 @@ namespace FactoryAIAssistant.Client.Tests
         [UnityTest]
         public IEnumerator OnAskButton_MessageNotEmpty_CallsAskAI()
         {
+            hmiClient.userMessagePrefab = new GameObject();
+            hmiClient.userMessagePrefab.AddComponent<TextMeshProUGUI>();
+
+            hmiClient.aiMessagePrefab = new GameObject();
+            hmiClient.aiMessagePrefab.AddComponent<TextMeshProUGUI>();
+            
+            var contentGameObject = new GameObject();
+            var contentTransform = contentGameObject.AddComponent<RectTransform>();
+            hmiClient.scrollRect.content = contentTransform;
+            
             hmiClient.inputField.text = "テストメッセージ";
+            
             hmiClient.OnAskButton();
             // AskAIコルーチンが開始されることを確認するための直接的なアサートは困難
             // ここではInputFiledがクリアされることを確認することで間接的に検証
