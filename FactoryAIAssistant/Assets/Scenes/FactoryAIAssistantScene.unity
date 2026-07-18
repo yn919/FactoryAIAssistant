@@ -5118,14 +5118,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a862ee61739647549b49f7d474ee2785, type: 3}
   m_Name: 
   m_EditorClassIdentifier: FactoryAIAssistant.Scripts::FactoryAIAssistant.Client.HMIClient
-  inputField: {fileID: 0}
-  chatContent: {fileID: 0}
-  userMessagePrefab: {fileID: 0}
-  aiMessagePrefab: {fileID: 0}
-  tempText: {fileID: 0}
-  pressureText: {fileID: 0}
-  vibrationText: {fileID: 0}
-  statusText: {fileID: 0}
+  inputField: {fileID: 76085294}
+  chatContent: {fileID: 1086079241}
+  userMessagePrefab: {fileID: 3757510381523204539, guid: 60114aed58ed1f54db9b5fe860f7628c, type: 3}
+  aiMessagePrefab: {fileID: 6612803754591451232, guid: 7fd8f8f536558f2459a9e96a7064fdd0, type: 3}
+  tempText: {fileID: 508504838}
+  pressureText: {fileID: 1965515846}
+  vibrationText: {fileID: 203806427}
+  statusText: {fileID: 354509336}
   scrollRect: {fileID: 0}
 --- !u!4 &799619808
 Transform:
