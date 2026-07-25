@@ -11,7 +11,7 @@ namespace FactoryAIAssistant.Client
     // Client class that handles communication with the backend
     public class HMIClient : MonoBehaviour
     {
-        private const string API_BASE = "https://localhost:5001";
+        private const string API_BASE = "http://localhost:8000";
 
         public TMP_InputField inputField;
         public Transform chatContent;
@@ -65,7 +65,7 @@ namespace FactoryAIAssistant.Client
 
             var json = JsonUtility.ToJson(new Question { message = message });
 
-            using var request = UnityWebRequest.Put($"{API_BASE}/ask", "POST");
+            using var request = UnityWebRequest.PostWwwForm($"{API_BASE}/ask", "");
             var body = Encoding.UTF8.GetBytes(json);
             request.uploadHandler = new UploadHandlerRaw(body);
             request.downloadHandler = new DownloadHandlerBuffer();
@@ -76,7 +76,7 @@ namespace FactoryAIAssistant.Client
             if (request.result == UnityWebRequest.Result.Success)
             {
                 var data = JsonUtility.FromJson<AnswerData>(request.downloadHandler.text);
-                AddMessage(data.message, false);
+                AddMessage(data.answer, false);
             }
             else
             {
