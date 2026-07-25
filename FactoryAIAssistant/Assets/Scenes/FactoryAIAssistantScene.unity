@@ -5100,7 +5100,7 @@ GameObject:
   - component: {fileID: 799619808}
   - component: {fileID: 799619807}
   m_Layer: 0
-  m_Name: HMIManager
+  m_Name: HMClient
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5126,7 +5126,7 @@ MonoBehaviour:
   pressureText: {fileID: 1965515846}
   vibrationText: {fileID: 203806427}
   statusText: {fileID: 354509336}
-  scrollRect: {fileID: 0}
+  scrollRect: {fileID: 73286569}
 --- !u!4 &799619808
 Transform:
   m_ObjectHideFlags: 0
@@ -8537,7 +8537,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1759681514}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 799619807}
+        m_TargetAssemblyTypeName: FactoryAIAssistant.Client.HMIClient, FactoryAIAssistant.Scripts
+        m_MethodName: OnAskButton
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1759681514
 MonoBehaviour:
   m_ObjectHideFlags: 0
