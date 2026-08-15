@@ -39,19 +39,18 @@ namespace FactoryAIAssistant.Client
 
         private IEnumerator GetSensor()
         {
-            using var request = UnityWebRequest.Get($"{API_BASE}/sensor");
-            yield return request.SendWebRequest();
-
-            if (request.result == UnityWebRequest.Result.Success)
+            using (var request = UnityWebRequest.Get($"{API_BASE}/sensor"))
             {
-                var data = JsonUtility.FromJson<SensorData>(request.downloadHandler.text);
-                tempText.text = $"温度：{data.temperature:F1} ℃";
-                pressureText.text = $"圧力：{data.pressure:F2} MPa";
-                vibrationText.text = $"振動：{data.vibration:F2} mm/s";
-                statusText.text = data.status == "warning" ? "警告" : "正常";
-                statusText.color = data.status == "warning" ? Color.red : Color.green;
-            }
-        }
+                yield return request.SendWebRequest();
+
+                        var data = JsonUtility.FromJson<SensorData>(request.downloadHandler.text);
+                        tempText.text = $"温度：{data.temperature:F1} ℃";
+                        pressureText.text = $"圧力：{data.pressure:F2} MPa";
+                        vibrationText.text = $"振動：{data.vibration:F2} mm/s";
+                        statusText.text = data.status == "warning" ? "警告" : "正常";
+                        statusText.color = data.status == "warning" ? Color.red : Color.green;
+                    }
+                }
 
         public void OnAskButton()
         {
