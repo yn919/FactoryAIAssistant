@@ -91,13 +91,10 @@ namespace FactoryAIAssistant.Client
             var prefab = isMine ? userMessagePrefab : aiMessagePrefab;
             var msgObj = Instantiate(prefab, chatContent, false);
             var rect = msgObj.GetComponent<RectTransform>();
+            // Reset transform but do not override prefab anchors which control layout
             rect.localPosition = Vector3.zero;
             rect.localScale = Vector3.one;
-            rect.anchorMin = new Vector2(0f, 0f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = Vector2.zero;
 
             // Find the Bubble child and the MessageText explicitly to avoid picking other TMPs
             var bubble = msgObj.transform.Find("Bubble");
@@ -164,6 +161,23 @@ namespace FactoryAIAssistant.Client
                     bubbleLayout.preferredWidth = clamped;
                     bubbleLayout.flexibleWidth = 0f;
                     bubbleLayout.minWidth = 0f;
+                }
+
+                // Ensure Bubble has a visible Image at runtime; if missing, assign Unity builtin UI sprite
+                var img = bubble.GetComponent<Image>();
+                if (img == null)
+                {
+                    img = bubble.gameObject.AddComponent<Image>();
+                    img.color = isMine ? new Color32(0x5A, 0xC8, 0xFF, 0xFF) : new Color32(0x2E, 0x3A, 0x46, 0xFF);
+                }
+                if (img.sprite == null)
+                {
+                    var builtinSprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+                    if (builtinSprite != null)
+                    {
+                        img.sprite = builtinSprite;
+                        img.type = Image.Type.Sliced;
+                    }
                 }
             }
 
