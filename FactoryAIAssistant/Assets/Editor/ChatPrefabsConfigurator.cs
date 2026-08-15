@@ -82,7 +82,7 @@ public static class ChatPrefabsConfigurator
         var bubble = EnsureChild(root, "Bubble");
         var rightSpacer = EnsureChild(root, "RightSpacer");
 
-        // Configure spacers: the position is driven by the spacer width, not by the bubble transform itself.
+        // Configure spacers
         var leftLE = GetOrAdd<LayoutElement>(leftSpacer);
         var rightLE = GetOrAdd<LayoutElement>(rightSpacer);
         leftLE.preferredWidth = 0f;
@@ -90,35 +90,31 @@ public static class ChatPrefabsConfigurator
         leftLE.flexibleWidth = isUser ? 1f : 0f;
         rightLE.flexibleWidth = isUser ? 0f : 1f;
 
-        // Bubble: ensure Image
+        // Bubble: ensure Image (NO SPRITE)
         var img = bubble.GetComponent<Image>();
         if (img == null) img = bubble.AddComponent<Image>();
-        var builtin = (Sprite)EditorGUIUtility.Load("UI/Skin/UISprite.psd");
-        if (builtin != null) img.sprite = builtin;
-        img.type = Image.Type.Sliced;
+
+        img.type = Image.Type.Simple;   // ← Sliced ではなく Simple に変更
         img.color = isUser ? UserColor : AIColor;
 
-        // Ensure bubble has a RectTransform (do not force anchors here to avoid breaking existing layout)
+        // Ensure bubble has a RectTransform
         var bubbleRT = bubble.GetComponent<RectTransform>();
         if (bubbleRT == null) bubbleRT = bubble.AddComponent<RectTransform>();
 
-        // Fix common typo in existing prefabs: "MessgeText" -> "MessageText"
+        // Fix common typo
         var misnamed = bubble.transform.parent != null ? bubble.transform.parent.Find("MessgeText") : null;
         if (misnamed != null)
         {
             misnamed.name = "MessageText";
         }
 
-        // If a MessageText exists directly under Bubble but with wrong name, fix it
         var msgTextChild = bubble.transform.Find("MessgeText");
         if (msgTextChild != null)
         {
             msgTextChild.name = "MessageText";
         }
 
-        // Ensure MessageText child exists (will be created below if missing)
-
-        // Bubble LayoutElement: dynamic width by text content, capped at 700px.
+        // Bubble LayoutElement
         var bubbleLE = GetOrAdd<LayoutElement>(bubble);
         bubbleLE.preferredWidth = 0f;
         bubbleLE.flexibleWidth = 0f;
@@ -131,7 +127,7 @@ public static class ChatPrefabsConfigurator
         bubbleCSF.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
         bubbleCSF.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-        // Ensure there is a TextMeshPro child; find existing TMP and move under bubble.
+        // Ensure TMP child exists
         var existingMessageText = root.GetComponentInChildren<TextMeshProUGUI>(true);
         if (existingMessageText != null)
         {
@@ -143,8 +139,8 @@ public static class ChatPrefabsConfigurator
             var messageRect = existingMessageText.GetComponent<RectTransform>();
             messageRect.anchorMin = new Vector2(0f, 0f);
             messageRect.anchorMax = new Vector2(1f, 1f);
-            messageRect.offsetMin = new Vector2(12f, 8f);
-            messageRect.offsetMax = new Vector2(-12f, -8f);
+            messageRect.offsetMin = new Vector2(8f, 0f);
+            messageRect.offsetMax = new Vector2(-8f, -8f);
             messageRect.sizeDelta = Vector2.zero;
 
             existingMessageText.enableWordWrapping = true;
@@ -154,6 +150,12 @@ public static class ChatPrefabsConfigurator
             existingMessageText.alignment = isUser ? TextAlignmentOptions.Right : TextAlignmentOptions.Left;
             existingMessageText.raycastTarget = false;
             existingMessageText.overflowMode = TextOverflowModes.Overflow;
+            existingMessageText.margin = new Vector4(8f, 6f, 8f, 6f);
+
+            var outline = existingMessageText.GetComponent<Outline>();
+            if (outline != null) outline.enabled = false;
+            var shadow = existingMessageText.GetComponent<Shadow>();
+            if (shadow != null) shadow.enabled = false;
         }
         else
         {
@@ -162,8 +164,8 @@ public static class ChatPrefabsConfigurator
             var rtChild = go.GetComponent<RectTransform>();
             rtChild.anchorMin = new Vector2(0f, 0f);
             rtChild.anchorMax = new Vector2(1f, 1f);
-            rtChild.offsetMin = new Vector2(12f, 8f);
-            rtChild.offsetMax = new Vector2(-12f, -8f);
+            rtChild.offsetMin = new Vector2(8f, 0f);
+            rtChild.offsetMax = new Vector2(-8f, -8f);
             rtChild.sizeDelta = Vector2.zero;
 
             var messageText = go.AddComponent<TextMeshProUGUI>();
@@ -175,14 +177,15 @@ public static class ChatPrefabsConfigurator
             messageText.alignment = isUser ? TextAlignmentOptions.Right : TextAlignmentOptions.Left;
             messageText.raycastTarget = false;
             messageText.overflowMode = TextOverflowModes.Overflow;
-            messageText.margin = new Vector4(12f, 8f, 12f, 8f);
+            messageText.margin = new Vector4(8f, 6f, 8f, 6f);
+
+            var outline2 = go.GetComponent<Outline>();
+            if (outline2 != null) outline2.enabled = false;
+            var shadow2 = go.GetComponent<Shadow>();
+            if (shadow2 != null) shadow2.enabled = false;
         }
 
-        // Ensure CanvasRenderer exists on bubble and TMP exists
         if (bubble.GetComponent<CanvasRenderer>() == null) bubble.AddComponent<CanvasRenderer>();
-
-        // Remove any stray Layout components on root children except the ones we manage
-        // (leave as-is to avoid destructive edits)
     }
 
     private static GameObject EnsureChild(GameObject parent, string name)
