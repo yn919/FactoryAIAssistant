@@ -98,6 +98,13 @@ public static class ChatPrefabsConfigurator
         img.type = Image.Type.Sliced;
         img.color = isUser ? UserColor : AIColor;
 
+        // Ensure bubble RectTransform does not stretch unexpectedly
+        var bubbleRT = bubble.GetComponent<RectTransform>();
+        bubbleRT.anchorMin = new Vector2(0f, 0.5f);
+        bubbleRT.anchorMax = new Vector2(0f, 0.5f);
+        bubbleRT.pivot = new Vector2(0f, 0.5f);
+        bubbleRT.sizeDelta = new Vector2(100f, 40f); // default size; ContentSizeFitter / LayoutElement will adjust at runtime
+
         // Bubble LayoutElement: dynamic width by text content, capped at 700px.
         var bubbleLE = GetOrAdd<LayoutElement>(bubble);
         bubbleLE.preferredWidth = 0f;

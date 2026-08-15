@@ -99,9 +99,29 @@ namespace FactoryAIAssistant.Client
             rect.anchoredPosition = Vector2.zero;
             rect.sizeDelta = Vector2.zero;
 
-            // Set message text
-            var messageText = msgObj.GetComponentInChildren<TMP_Text>();
-            messageText.text = message;
+            // Find the Bubble child and the MessageText explicitly to avoid picking other TMPs
+            var bubble = msgObj.transform.Find("Bubble");
+
+            TMP_Text messageText = null;
+            if (bubble != null)
+            {
+                // prefer a child named MessageText under Bubble
+                var msgTextTransform = bubble.Find("MessageText");
+                if (msgTextTransform != null)
+                {
+                    messageText = msgTextTransform.GetComponent<TMP_Text>();
+                }
+            }
+            // fallback to any TMP found under the row
+            if (messageText == null)
+            {
+                messageText = msgObj.GetComponentInChildren<TMP_Text>();
+            }
+
+            if (messageText != null)
+            {
+                messageText.text = message;
+            }
 
             // Ensure alignment via HorizontalLayoutGroup childAlignment and spacer flexible widths
             var hlg = msgObj.GetComponent<HorizontalLayoutGroup>();
@@ -123,16 +143,25 @@ namespace FactoryAIAssistant.Client
             }
 
             // Adjust bubble width dynamically based on text preferred width, clamped to max
-            var bubble = msgObj.transform.Find("Bubble");
             if (bubble != null)
             {
                 var bubbleLayout = bubble.GetComponent<LayoutElement>() ?? bubble.gameObject.AddComponent<LayoutElement>();
+                // ensure ContentSizeFitter on bubble does not conflict at runtime
+                var bubbleCSF = bubble.GetComponent<ContentSizeFitter>();
+                if (bubbleCSF != null)
+                {
+                    // prefer PreferredSize for horizontal fit
+                    bubbleCSF.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                }
+
+                // find TMP under bubble specifically
                 var bubbleText = bubble.GetComponentInChildren<TMP_Text>();
                 if (bubbleText != null)
                 {
                     float padding = 24f; // left + right padding inside bubble
                     float computedWidth = bubbleText.preferredWidth + padding;
-                    bubbleLayout.preferredWidth = Mathf.Clamp(computedWidth, 0f, 700f);
+                    float clamped = Mathf.Clamp(computedWidth, 0f, 700f);
+                    bubbleLayout.preferredWidth = clamped;
                     bubbleLayout.flexibleWidth = 0f;
                     bubbleLayout.minWidth = 0f;
                 }
@@ -146,36 +175,57 @@ namespace FactoryAIAssistant.Client
             }
             LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
 
-            // Fallback: if layout doesn't place bubble correctly on some devices/configs,
-            // disable this row's HorizontalLayoutGroup and position Bubble manually.
+            // Verify placement: if bubble is not near the expected side, perform manual anchor fallback
             var rowLayout = msgObj.GetComponent<HorizontalLayoutGroup>();
             var bubbleRect = bubble != null ? bubble.GetComponent<RectTransform>() : null;
+            bool appliedManualFallback = false;
             if (bubbleRect != null)
             {
-                // compute target size for bubble based on LayoutElement if present
-                var bubbleLayout = bubble.GetComponent<LayoutElement>();
-                float finalWidth = bubbleLayout != null && bubbleLayout.preferredWidth > 0f ? bubbleLayout.preferredWidth : bubbleRect.sizeDelta.x;
-                // disable automatic row layout to preserve manual placement
-                if (rowLayout != null) rowLayout.enabled = false;
+                // determine where bubble ended up (local position)
+                float localX = bubbleRect.anchoredPosition.x;
+                // If childAlignment is MiddleCenter or bubble spans full width, localX may be 0; detect by comparing widths
+                var bubbleLE = bubble.GetComponent<LayoutElement>();
+                float bubbleWidth = bubbleLE != null && bubbleLE.preferredWidth > 0f ? bubbleLE.preferredWidth : bubbleRect.rect.width;
+                var parentWidth = rect.rect.width;
 
-                // anchor and place bubble at left or right inside the row
-                float horizontalMargin = 8f;
-                if (isMine)
+                bool isAtRight = localX > 10f || (parentWidth - bubbleRect.anchoredPosition.x - bubbleWidth) < (parentWidth * 0.25f);
+                bool isAtLeft = localX < -10f || bubbleRect.anchoredPosition.x < (parentWidth * 0.25f);
+
+                // If layout didn't push bubble to expected side, apply manual placement
+                bool shouldBeRight = isMine;
+                bool incorrectlyPlaced = (shouldBeRight && !isAtRight) || (!shouldBeRight && !isAtLeft);
+                if (incorrectlyPlaced)
                 {
-                    bubbleRect.anchorMin = new Vector2(1f, 0.5f);
-                    bubbleRect.anchorMax = new Vector2(1f, 0.5f);
-                    bubbleRect.pivot = new Vector2(1f, 0.5f);
-                    bubbleRect.sizeDelta = new Vector2(finalWidth, bubbleRect.sizeDelta.y);
-                    bubbleRect.anchoredPosition = new Vector2(-horizontalMargin, 0f);
+                    // disable automatic row layout to preserve manual placement
+                    if (rowLayout != null) rowLayout.enabled = false;
+
+                    float horizontalMargin = 8f;
+                    float finalWidth = bubbleLE != null && bubbleLE.preferredWidth > 0f ? bubbleLE.preferredWidth : bubbleRect.sizeDelta.x;
+
+                    if (shouldBeRight)
+                    {
+                        bubbleRect.anchorMin = new Vector2(1f, 0.5f);
+                        bubbleRect.anchorMax = new Vector2(1f, 0.5f);
+                        bubbleRect.pivot = new Vector2(1f, 0.5f);
+                        bubbleRect.sizeDelta = new Vector2(finalWidth, bubbleRect.sizeDelta.y);
+                        bubbleRect.anchoredPosition = new Vector2(-horizontalMargin, 0f);
+                    }
+                    else
+                    {
+                        bubbleRect.anchorMin = new Vector2(0f, 0.5f);
+                        bubbleRect.anchorMax = new Vector2(0f, 0.5f);
+                        bubbleRect.pivot = new Vector2(0f, 0.5f);
+                        bubbleRect.sizeDelta = new Vector2(finalWidth, bubbleRect.sizeDelta.y);
+                        bubbleRect.anchoredPosition = new Vector2(horizontalMargin, 0f);
+                    }
+
+                    appliedManualFallback = true;
                 }
-                else
-                {
-                    bubbleRect.anchorMin = new Vector2(0f, 0.5f);
-                    bubbleRect.anchorMax = new Vector2(0f, 0.5f);
-                    bubbleRect.pivot = new Vector2(0f, 0.5f);
-                    bubbleRect.sizeDelta = new Vector2(finalWidth, bubbleRect.sizeDelta.y);
-                    bubbleRect.anchoredPosition = new Vector2(horizontalMargin, 0f);
-                }
+            }
+
+            if (appliedManualFallback)
+            {
+                Debug.Log($"[HMIClient] Applied manual bubble placement for message (isMine={isMine}): '{(messageText!=null?messageText.text:"(null)")}'");
             }
 
             Canvas.ForceUpdateCanvases();
