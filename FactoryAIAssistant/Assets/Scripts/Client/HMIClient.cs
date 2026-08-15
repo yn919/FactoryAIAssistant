@@ -130,15 +130,27 @@ namespace FactoryAIAssistant.Client
 
             var leftSpacer = msgObj.transform.Find("LeftSpacer");
             var rightSpacer = msgObj.transform.Find("RightSpacer");
-            if (leftSpacer != null && rightSpacer != null)
+
+            // Ensure spacers exist and have LayoutElement so layout can push the bubble left/right
+            if (leftSpacer == null)
             {
-                var leftLE = leftSpacer.GetComponent<LayoutElement>() ?? leftSpacer.gameObject.AddComponent<LayoutElement>();
-                var rightLE = rightSpacer.GetComponent<LayoutElement>() ?? rightSpacer.gameObject.AddComponent<LayoutElement>();
-                leftLE.preferredWidth = 0f;
-                rightLE.preferredWidth = 0f;
-                leftLE.flexibleWidth = isMine ? 1f : 0f;
-                rightLE.flexibleWidth = isMine ? 0f : 1f;
+                var go = new GameObject("LeftSpacer", typeof(RectTransform));
+                go.transform.SetParent(msgObj.transform, false);
+                leftSpacer = go.transform;
             }
+            if (rightSpacer == null)
+            {
+                var go = new GameObject("RightSpacer", typeof(RectTransform));
+                go.transform.SetParent(msgObj.transform, false);
+                rightSpacer = go.transform;
+            }
+
+            var leftLEMain = leftSpacer.GetComponent<LayoutElement>() ?? leftSpacer.gameObject.AddComponent<LayoutElement>();
+            var rightLEMain = rightSpacer.GetComponent<LayoutElement>() ?? rightSpacer.gameObject.AddComponent<LayoutElement>();
+            leftLEMain.preferredWidth = 0f;
+            rightLEMain.preferredWidth = 0f;
+            leftLEMain.flexibleWidth = isMine ? 1f : 0f;
+            rightLEMain.flexibleWidth = isMine ? 0f : 1f;
 
             // Adjust bubble width dynamically based on text preferred width, clamped to max
             if (bubble != null)
@@ -203,6 +215,27 @@ namespace FactoryAIAssistant.Client
                 LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
             }
             LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+
+            // After initial layout pass, clamp bubble width to not exceed parent width minus margins
+            if (bubble != null)
+            {
+                var bubbleLayoutAfter = bubble.GetComponent<LayoutElement>();
+                var bubbleRectAfter = bubble.GetComponent<RectTransform>();
+                if (bubbleLayoutAfter != null && bubbleRectAfter != null)
+                {
+                    float parentWidthAfter = rect.rect.width;
+                    if (parentWidthAfter > 0f && bubbleLayoutAfter.preferredWidth > parentWidthAfter - 32f)
+                    {
+                        bubbleLayoutAfter.preferredWidth = Mathf.Max(0f, parentWidthAfter - 32f);
+                        // rebuild again to apply the tightened width
+                        if (contentRect != null)
+                        {
+                            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+                        }
+                        LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+                    }
+                }
+            }
 
             // Verify placement: if bubble is not near the expected side, perform manual anchor fallback
             var rowLayout = msgObj.GetComponent<HorizontalLayoutGroup>();
