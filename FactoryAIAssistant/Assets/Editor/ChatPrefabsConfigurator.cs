@@ -98,12 +98,25 @@ public static class ChatPrefabsConfigurator
         img.type = Image.Type.Sliced;
         img.color = isUser ? UserColor : AIColor;
 
-        // Ensure bubble RectTransform does not stretch unexpectedly
+        // Ensure bubble has a RectTransform (do not force anchors here to avoid breaking existing layout)
         var bubbleRT = bubble.GetComponent<RectTransform>();
-        bubbleRT.anchorMin = new Vector2(0f, 0.5f);
-        bubbleRT.anchorMax = new Vector2(0f, 0.5f);
-        bubbleRT.pivot = new Vector2(0f, 0.5f);
-        bubbleRT.sizeDelta = new Vector2(100f, 40f); // default size; ContentSizeFitter / LayoutElement will adjust at runtime
+        if (bubbleRT == null) bubbleRT = bubble.AddComponent<RectTransform>();
+
+        // Fix common typo in existing prefabs: "MessgeText" -> "MessageText"
+        var misnamed = bubble.transform.parent != null ? bubble.transform.parent.Find("MessgeText") : null;
+        if (misnamed != null)
+        {
+            misnamed.name = "MessageText";
+        }
+
+        // If a MessageText exists directly under Bubble but with wrong name, fix it
+        var msgTextChild = bubble.transform.Find("MessgeText");
+        if (msgTextChild != null)
+        {
+            msgTextChild.name = "MessageText";
+        }
+
+        // Ensure MessageText child exists (will be created below if missing)
 
         // Bubble LayoutElement: dynamic width by text content, capped at 700px.
         var bubbleLE = GetOrAdd<LayoutElement>(bubble);
