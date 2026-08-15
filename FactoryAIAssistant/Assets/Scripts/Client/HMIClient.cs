@@ -271,6 +271,61 @@ namespace FactoryAIAssistant.Client
                         LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
                     }
                 }
+
+                // Enforce spacer/fallback alignment deterministically per isMine
+                // Ensure layout group alignment and spacer flexible widths first
+                if (hlg != null)
+                {
+                    hlg.childAlignment = isMine ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
+                }
+                if (leftSpacer != null && rightSpacer != null)
+                {
+                    var leftLEFinal = leftSpacer.GetComponent<LayoutElement>();
+                    var rightLEFinal = rightSpacer.GetComponent<LayoutElement>();
+                    if (leftLEFinal != null && rightLEFinal != null)
+                    {
+                        leftLEFinal.flexibleWidth = isMine ? 1f : 0f;
+                        rightLEFinal.flexibleWidth = isMine ? 0f : 1f;
+                    }
+                }
+
+                // Rebuild to let the layout position the bubble
+                if (contentRect != null)
+                {
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+                }
+                LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+
+                // If still not aligned, apply manual anchor placement (strong enforcement)
+                var bubbleRectFinal = bubble.GetComponent<RectTransform>();
+                if (bubbleRectFinal != null)
+                {
+                    float horizontalMargin = 8f;
+                    bool shouldBeRight = isMine;
+                    // consider as not aligned if bubble is near center
+                    bool isCentered = Mathf.Abs(bubbleRectFinal.anchoredPosition.x) < 8f;
+                    if (isCentered)
+                    {
+                        if (rowLayout != null) rowLayout.enabled = false;
+                        float finalWidth = (bubble.GetComponent<LayoutElement>() != null && bubble.GetComponent<LayoutElement>().preferredWidth > 0f) ? bubble.GetComponent<LayoutElement>().preferredWidth : bubbleRectFinal.sizeDelta.x;
+                        if (shouldBeRight)
+                        {
+                            bubbleRectFinal.anchorMin = new Vector2(1f, 0.5f);
+                            bubbleRectFinal.anchorMax = new Vector2(1f, 0.5f);
+                            bubbleRectFinal.pivot = new Vector2(1f, 0.5f);
+                            bubbleRectFinal.sizeDelta = new Vector2(finalWidth, bubbleRectFinal.sizeDelta.y);
+                            bubbleRectFinal.anchoredPosition = new Vector2(-horizontalMargin, 0f);
+                        }
+                        else
+                        {
+                            bubbleRectFinal.anchorMin = new Vector2(0f, 0.5f);
+                            bubbleRectFinal.anchorMax = new Vector2(0f, 0.5f);
+                            bubbleRectFinal.pivot = new Vector2(0f, 0.5f);
+                            bubbleRectFinal.sizeDelta = new Vector2(finalWidth, bubbleRectFinal.sizeDelta.y);
+                            bubbleRectFinal.anchoredPosition = new Vector2(horizontalMargin, 0f);
+                        }
+                    }
+                }
             }
 
             // Verify placement: if bubble is not near the expected side, perform manual anchor fallback
