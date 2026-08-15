@@ -173,11 +173,25 @@ namespace FactoryAIAssistant.Client
                 }
                 if (img.sprite == null)
                 {
-                    var builtinSprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+                    // Try built-in resource first (may fail in some Unity versions)
+                    Sprite builtinSprite = null;
+                    try
+                    {
+                        builtinSprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
+                    }
+                    catch { builtinSprite = null; }
+
                     if (builtinSprite != null)
                     {
                         img.sprite = builtinSprite;
                         img.type = Image.Type.Sliced;
+                    }
+                    else
+                    {
+                        // Fallback: create a simple white 1x1 sprite so the Image is visible at runtime
+                        var tex = Texture2D.whiteTexture;
+                        img.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                        img.type = Image.Type.Simple;
                     }
                 }
             }
@@ -249,7 +263,10 @@ namespace FactoryAIAssistant.Client
 
             if (appliedManualFallback)
             {
-                Debug.Log($"[HMIClient] Applied manual bubble placement for message (isMine={isMine}): '{(messageText!=null?messageText.text:"(null)")}'");
+                // provide richer debug info to help diagnose layout failures
+                var leftLEForLog = leftSpacer != null ? leftSpacer.GetComponent<LayoutElement>() : null;
+                var rightLEForLog = rightSpacer != null ? rightSpacer.GetComponent<LayoutElement>() : null;
+                Debug.Log($"[HMIClient] Applied manual bubble placement (isMine={isMine}) message='{(messageText!=null?messageText.text:"(null)")}' parentW={rect.rect.width:F1} bubbleW={bubbleRect.rect.width:F1} leftFlex={(leftLEForLog!=null?leftLEForLog.flexibleWidth:-1):-1} rightFlex={(rightLEForLog!=null?rightLEForLog.flexibleWidth:-1):-1}");
             }
 
             Canvas.ForceUpdateCanvases();
