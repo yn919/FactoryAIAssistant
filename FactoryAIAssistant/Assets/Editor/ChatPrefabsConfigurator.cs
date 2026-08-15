@@ -10,7 +10,7 @@ using TMPro;
 // and sets colors / preferred width = 700px.
 public static class ChatPrefabsConfigurator
 {
-    private const int PreferredWidth = 700;
+    private const int MaxBubbleWidth = 700;
     private static readonly Color UserColor = new Color32(0x5A, 0xC8, 0xFF, 0xFF); // #5AC8FF
     private static readonly Color AIColor = new Color32(0x2E, 0x3A, 0x46, 0xFF);   // #2E3A46
 
@@ -55,23 +55,23 @@ public static class ChatPrefabsConfigurator
         // Ensure RectTransform exists
         var rt = root.GetComponent<RectTransform>();
         if (rt == null) rt = root.AddComponent<RectTransform>();
-        // Configure anchors: minX=0, maxX=1, pivotY=1
-        rt.anchorMin = new Vector2(0f, rt.anchorMin.y);
-        rt.anchorMax = new Vector2(1f, rt.anchorMax.y == 0 ? 1f : rt.anchorMax.y);
-        rt.pivot = new Vector2(rt.pivot.x, 1f);
+        rt.anchorMin = new Vector2(0f, 0f);
+        rt.anchorMax = new Vector2(1f, 1f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = Vector2.zero;
 
-        // HorizontalLayoutGroup on root
+        // Layout row: full width, but bubble stays a fixed maximum width.
         var hlg = root.GetComponent<HorizontalLayoutGroup>();
         if (hlg == null) hlg = root.AddComponent<HorizontalLayoutGroup>();
-        hlg.childAlignment = TextAnchor.MiddleCenter;
+        hlg.childAlignment = isUser ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
         hlg.childControlWidth = false;
         hlg.childControlHeight = false;
         hlg.childForceExpandWidth = false;
+        hlg.childForceExpandHeight = false;
         hlg.spacing = 8;
         hlg.padding.left = 8;
         hlg.padding.right = 8;
 
-        // ContentSizeFitter vertical preferred
         var csf = root.GetComponent<ContentSizeFitter>();
         if (csf == null) csf = root.AddComponent<ContentSizeFitter>();
         csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -82,60 +82,61 @@ public static class ChatPrefabsConfigurator
         var bubble = EnsureChild(root, "Bubble");
         var rightSpacer = EnsureChild(root, "RightSpacer");
 
-        // Configure spacers
+        // Configure spacers: the position is driven by the spacer width, not by the bubble transform itself.
         var leftLE = GetOrAdd<LayoutElement>(leftSpacer);
         var rightLE = GetOrAdd<LayoutElement>(rightSpacer);
-        // For user: left flexible = 1, right = 0 (bubble on right)
-        // For AI: left = 0, right = 1 (bubble on left)
+        leftLE.preferredWidth = 0f;
+        rightLE.preferredWidth = 0f;
         leftLE.flexibleWidth = isUser ? 1f : 0f;
         rightLE.flexibleWidth = isUser ? 0f : 1f;
 
         // Bubble: ensure Image
         var img = bubble.GetComponent<Image>();
         if (img == null) img = bubble.AddComponent<Image>();
-        // Assign builtin UI sprite so Color shows reliably
         var builtin = (Sprite)EditorGUIUtility.Load("UI/Skin/UISprite.psd");
         if (builtin != null) img.sprite = builtin;
         img.type = Image.Type.Sliced;
         img.color = isUser ? UserColor : AIColor;
 
-        // Bubble LayoutElement
+        // Bubble LayoutElement: dynamic width by text content, capped at 700px.
         var bubbleLE = GetOrAdd<LayoutElement>(bubble);
-        bubbleLE.preferredWidth = PreferredWidth;
+        bubbleLE.preferredWidth = 0f;
         bubbleLE.flexibleWidth = 0f;
+        bubbleLE.minWidth = 0f;
+        bubbleLE.minHeight = 0f;
 
         // Bubble ContentSizeFitter
         var bubbleCSF = bubble.GetComponent<ContentSizeFitter>();
         if (bubbleCSF == null) bubbleCSF = bubble.AddComponent<ContentSizeFitter>();
-        bubbleCSF.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        bubbleCSF.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
         bubbleCSF.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-        // Ensure there is a TextMeshPro child; find existing TMP and move under bubble
-        var existingTMP = root.GetComponentInChildren<TextMeshProUGUI>(true);
-        if (existingTMP != null)
+        // Ensure there is a TextMeshPro child; find existing TMP and move under bubble.
+        var existingMessageText = root.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (existingMessageText != null)
         {
-            // If TMP is not already under bubble, reparent
-            if (existingTMP.transform.parent != bubble.transform)
+            if (existingMessageText.transform.parent != bubble.transform)
             {
-                existingTMP.transform.SetParent(bubble.transform, false);
+                existingMessageText.transform.SetParent(bubble.transform, false);
             }
-            // Adjust rect transform to stretch
-            var tmpRT = existingTMP.GetComponent<RectTransform>();
-            tmpRT.anchorMin = new Vector2(0f, 0f);
-            tmpRT.anchorMax = new Vector2(1f, 1f);
-            tmpRT.offsetMin = new Vector2(12f, 8f); // left, bottom padding
-            tmpRT.offsetMax = new Vector2(-12f, -8f); // right, top padding
 
-            // TMP settings
-            existingTMP.enableWordWrapping = true;
-            existingTMP.enableAutoSizing = false;
-            existingTMP.fontSize = 22;
-            existingTMP.color = Color.white;
-            existingTMP.alignment = isUser ? TextAlignmentOptions.Right : TextAlignmentOptions.Left;
+            var messageRect = existingMessageText.GetComponent<RectTransform>();
+            messageRect.anchorMin = new Vector2(0f, 0f);
+            messageRect.anchorMax = new Vector2(1f, 1f);
+            messageRect.offsetMin = new Vector2(12f, 8f);
+            messageRect.offsetMax = new Vector2(-12f, -8f);
+            messageRect.sizeDelta = Vector2.zero;
+
+            existingMessageText.enableWordWrapping = true;
+            existingMessageText.enableAutoSizing = false;
+            existingMessageText.fontSize = 22;
+            existingMessageText.color = Color.white;
+            existingMessageText.alignment = isUser ? TextAlignmentOptions.Right : TextAlignmentOptions.Left;
+            existingMessageText.raycastTarget = false;
+            existingMessageText.overflowMode = TextOverflowModes.Overflow;
         }
         else
         {
-            // create a new TMP child
             var go = new GameObject("MessageText", typeof(RectTransform));
             go.transform.SetParent(bubble.transform, false);
             var rtChild = go.GetComponent<RectTransform>();
@@ -143,13 +144,18 @@ public static class ChatPrefabsConfigurator
             rtChild.anchorMax = new Vector2(1f, 1f);
             rtChild.offsetMin = new Vector2(12f, 8f);
             rtChild.offsetMax = new Vector2(-12f, -8f);
-            var tmp = go.AddComponent<TextMeshProUGUI>();
-            tmp.text = "New Message";
-            tmp.enableWordWrapping = true;
-            tmp.enableAutoSizing = false;
-            tmp.fontSize = 22;
-            tmp.color = Color.white;
-            tmp.alignment = isUser ? TextAlignmentOptions.Right : TextAlignmentOptions.Left;
+            rtChild.sizeDelta = Vector2.zero;
+
+            var messageText = go.AddComponent<TextMeshProUGUI>();
+            messageText.text = "New Message";
+            messageText.enableWordWrapping = true;
+            messageText.enableAutoSizing = false;
+            messageText.fontSize = 22;
+            messageText.color = Color.white;
+            messageText.alignment = isUser ? TextAlignmentOptions.Right : TextAlignmentOptions.Left;
+            messageText.raycastTarget = false;
+            messageText.overflowMode = TextOverflowModes.Overflow;
+            messageText.margin = new Vector4(12f, 8f, 12f, 8f);
         }
 
         // Ensure CanvasRenderer exists on bubble and TMP exists
