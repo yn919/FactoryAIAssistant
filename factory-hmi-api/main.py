@@ -24,7 +24,7 @@ SYSTEM_PROMPT = """
 回答は3行以内で、専門用語はわかりやすく説明してください。
 """
 model = genai.GenerativeModel(
-    "gemini-2.0-flash",
+    "gemini-3.1-flash-lite",
     system_instruction=SYSTEM_PROMPT
 )
 

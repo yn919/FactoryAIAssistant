@@ -6,6 +6,6 @@ namespace FactoryAIAssistant.Data
     [Serializable]
     public class AnswerData
     {
-        public string message;
+        public string answer;
     }
 }
