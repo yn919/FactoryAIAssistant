@@ -206,8 +206,9 @@ namespace FactoryAIAssistant.Client
                 // or if bubble is centered and spacers offer no flexible width to push it left/right.
                 bool spansNearlyFull = bubbleWidth >= parentWidth - 10f;
 
-                var leftSpacer = msgObj.transform.Find("LeftSpacer");
-                var rightSpacer = msgObj.transform.Find("RightSpacer");
+                // reuse spacers found earlier (do not redeclare variable names)
+                leftSpacer = leftSpacer ?? msgObj.transform.Find("LeftSpacer");
+                rightSpacer = rightSpacer ?? msgObj.transform.Find("RightSpacer");
                 var leftLE = leftSpacer != null ? leftSpacer.GetComponent<LayoutElement>() : null;
                 var rightLE = rightSpacer != null ? rightSpacer.GetComponent<LayoutElement>() : null;
 
