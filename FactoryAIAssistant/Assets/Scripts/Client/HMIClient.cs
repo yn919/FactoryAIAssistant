@@ -43,14 +43,27 @@ namespace FactoryAIAssistant.Client
             {
                 yield return request.SendWebRequest();
 
-                        var data = JsonUtility.FromJson<SensorData>(request.downloadHandler.text);
-                        tempText.text = $"温度：{data.temperature:F1} ℃";
-                        pressureText.text = $"圧力：{data.pressure:F2} MPa";
-                        vibrationText.text = $"振動：{data.vibration:F2} mm/s";
-                        statusText.text = data.status == "warning" ? "警告" : "正常";
-                        statusText.color = data.status == "warning" ? Color.red : Color.green;
+                if (request.result == UnityWebRequest.Result.Success && request.downloadHandler != null)
+                {
+                    var data = JsonUtility.FromJson<SensorData>(request.downloadHandler.text);
+                    if (data != null)
+                    {
+                        if (tempText != null) tempText.text = $"温度：{data.temperature:F1} ℃";
+                        if (pressureText != null) pressureText.text = $"圧力：{data.pressure:F2} MPa";
+                        if (vibrationText != null) vibrationText.text = $"振動：{data.vibration:F2} mm/s";
+                        if (statusText != null)
+                        {
+                            statusText.text = data.status == "warning" ? "警告" : "正常";
+                            statusText.color = data.status == "warning" ? Color.red : Color.green;
+                        }
                     }
                 }
+                else
+                {
+                    Debug.LogWarning($"[HMIClient] GetSensor request failed: {request.error}");
+                }
+            }
+        }
 
         public void OnAskButton()
         {
