@@ -136,6 +136,8 @@ namespace FactoryAIAssistant.Client
 
             // Ensure alignment via HorizontalLayoutGroup childAlignment and spacer flexible widths
             var hlg = msgObj.GetComponent<HorizontalLayoutGroup>();
+            // Keep a reference named rowLayout for later manual fallback usage
+            var rowLayout = hlg;
             if (hlg != null)
             {
                 hlg.childAlignment = isMine ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
@@ -329,7 +331,6 @@ namespace FactoryAIAssistant.Client
             }
 
             // Verify placement: if bubble is not near the expected side, perform manual anchor fallback
-            var rowLayout = msgObj.GetComponent<HorizontalLayoutGroup>();
             var bubbleRect = bubble != null ? bubble.GetComponent<RectTransform>() : null;
             bool appliedManualFallback = false;
             if (bubbleRect != null)
