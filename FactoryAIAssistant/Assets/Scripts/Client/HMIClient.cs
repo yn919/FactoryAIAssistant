@@ -203,6 +203,44 @@ namespace FactoryAIAssistant.Client
                     var tex = Texture2D.whiteTexture;
                     img.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
                     img.type = Image.Type.Simple;
+
+                    // Create a small top cover inside Bubble to hide seams from fallback sprite
+                    const float coverHeight = 2f;
+                    var topCover = bubble.Find("TopCover");
+                    if (topCover == null)
+                    {
+                        var coverGo = new GameObject("TopCover", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                        coverGo.transform.SetParent(bubble, false);
+                        topCover = coverGo.transform;
+                    }
+                    var topRT = topCover.GetComponent<RectTransform>();
+                    // Anchor to top stretch horizontally
+                    topRT.anchorMin = new Vector2(0f, 1f);
+                    topRT.anchorMax = new Vector2(1f, 1f);
+                    topRT.pivot = new Vector2(0.5f, 1f);
+                    topRT.anchoredPosition = Vector2.zero;
+                    topRT.sizeDelta = new Vector2(0f, coverHeight);
+
+                    var topImg = topCover.GetComponent<Image>();
+                    topImg.raycastTarget = false;
+                    // Match bubble color to visually blend
+                    topImg.color = img.color;
+                }
+
+                // Ensure MessageText has top padding so TopCover doesn't overlap text
+                var bubbleTextRt = bubble.GetComponentInChildren<RectTransform>();
+                if (bubbleTextRt != null)
+                {
+                    // Keep existing offsets but ensure top padding >= coverHeight + 4
+                    var offsetMin = bubbleTextRt.offsetMin;
+                    var offsetMax = bubbleTextRt.offsetMax;
+                    float desiredTopPadding = 6f; // coverHeight(2) + 4px margin
+                    if (-offsetMax.y < desiredTopPadding)
+                    {
+                        offsetMax.y = -desiredTopPadding;
+                        bubbleTextRt.offsetMin = offsetMin;
+                        bubbleTextRt.offsetMax = offsetMax;
+                    }
                 }
             }
 
