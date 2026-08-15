@@ -183,17 +183,25 @@ namespace FactoryAIAssistant.Client
             {
                 // determine where bubble ended up (local position)
                 float localX = bubbleRect.anchoredPosition.x;
-                // If childAlignment is MiddleCenter or bubble spans full width, localX may be 0; detect by comparing widths
                 var bubbleLE = bubble.GetComponent<LayoutElement>();
                 float bubbleWidth = bubbleLE != null && bubbleLE.preferredWidth > 0f ? bubbleLE.preferredWidth : bubbleRect.rect.width;
                 var parentWidth = rect.rect.width;
 
-                bool isAtRight = localX > 10f || (parentWidth - bubbleRect.anchoredPosition.x - bubbleWidth) < (parentWidth * 0.25f);
-                bool isAtLeft = localX < -10f || bubbleRect.anchoredPosition.x < (parentWidth * 0.25f);
+                // Only apply manual fallback if the bubble spans nearly full width (layout failure),
+                // or if bubble is centered and spacers offer no flexible width to push it left/right.
+                bool spansNearlyFull = bubbleWidth >= parentWidth - 10f;
 
-                // If layout didn't push bubble to expected side, apply manual placement
+                var leftSpacer = msgObj.transform.Find("LeftSpacer");
+                var rightSpacer = msgObj.transform.Find("RightSpacer");
+                var leftLE = leftSpacer != null ? leftSpacer.GetComponent<LayoutElement>() : null;
+                var rightLE = rightSpacer != null ? rightSpacer.GetComponent<LayoutElement>() : null;
+
+                bool spacersAreInactive = (leftLE == null || leftLE.flexibleWidth <= 0f) && (rightLE == null || rightLE.flexibleWidth <= 0f);
+                bool bubbleCentered = Mathf.Abs(localX) < 5f;
+
                 bool shouldBeRight = isMine;
-                bool incorrectlyPlaced = (shouldBeRight && !isAtRight) || (!shouldBeRight && !isAtLeft);
+                bool incorrectlyPlaced = spansNearlyFull || (bubbleCentered && spacersAreInactive);
+
                 if (incorrectlyPlaced)
                 {
                     // disable automatic row layout to preserve manual placement
