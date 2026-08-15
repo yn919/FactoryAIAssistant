@@ -65,22 +65,24 @@ namespace FactoryAIAssistant.Client
 
             var json = JsonUtility.ToJson(new Question { message = message });
 
-            using var request = UnityWebRequest.PostWwwForm($"{API_BASE}/ask", "");
-            var body = Encoding.UTF8.GetBytes(json);
-            request.uploadHandler = new UploadHandlerRaw(body);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            request.SetRequestHeader("Content-Type", "application/json");
-
-            yield return request.SendWebRequest();
-
-            if (request.result == UnityWebRequest.Result.Success)
+            using (var request = new UnityWebRequest($"{API_BASE}/ask", "POST"))
             {
-                var data = JsonUtility.FromJson<AnswerData>(request.downloadHandler.text);
-                AddMessage(data.answer, false);
-            }
-            else
-            {
-                AddMessage($"エラー：{request.error}", false);
+                var body = Encoding.UTF8.GetBytes(json);
+                request.uploadHandler = new UploadHandlerRaw(body);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    var data = JsonUtility.FromJson<AnswerData>(request.downloadHandler.text);
+                    AddMessage(data.answer, false);
+                }
+                else
+                {
+                    AddMessage($"エラー：{request.error}", false);
+                }
             }
 
             inputField.text = string.Empty;
