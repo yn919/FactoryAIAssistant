@@ -198,26 +198,11 @@ namespace FactoryAIAssistant.Client
                 }
                 if (img.sprite == null)
                 {
-                    // Try built-in resource first (may fail in some Unity versions)
-                    Sprite builtinSprite = null;
-                    try
-                    {
-                        builtinSprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
-                    }
-                    catch { builtinSprite = null; }
-
-                    if (builtinSprite != null)
-                    {
-                        img.sprite = builtinSprite;
-                        img.type = Image.Type.Sliced;
-                    }
-                    else
-                    {
-                        // Fallback: create a simple white 1x1 sprite so the Image is visible at runtime
-                        var tex = Texture2D.whiteTexture;
-                        img.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                        img.type = Image.Type.Simple;
-                    }
+                    // Avoid calling GetBuiltinResource to prevent editor warnings on some Unity installs.
+                    // Create a simple white 1x1 sprite so the Image is visible at runtime.
+                    var tex = Texture2D.whiteTexture;
+                    img.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                    img.type = Image.Type.Simple;
                 }
             }
 
