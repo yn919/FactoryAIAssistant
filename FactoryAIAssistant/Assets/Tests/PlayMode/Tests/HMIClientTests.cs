@@ -15,19 +15,54 @@ namespace FactoryAIAssistant.Client.Tests
         [SetUp]
         public void Setup()
         {
-            hmiClientGameObject = new GameObject();
+            hmiClientGameObject = new GameObject("HMIClient");
             hmiClient = hmiClientGameObject.AddComponent<HMIClient>();
 
-            // Set up mock UI elements
-            hmiClient.inputField = new GameObject().AddComponent<TMP_InputField>();
-            hmiClient.chatContent = new GameObject().transform;
-            hmiClient.userMessagePrefab = new GameObject();
-            hmiClient.aiMessagePrefab = new GameObject();
-            hmiClient.tempText = new GameObject().AddComponent<TextMeshProUGUI>();
-            hmiClient.pressureText = new GameObject().AddComponent<TextMeshProUGUI>();
-            hmiClient.vibrationText = new GameObject().AddComponent<TextMeshProUGUI>();
-            hmiClient.statusText = new GameObject().AddComponent<TextMeshProUGUI>();
-            hmiClient.scrollRect = new GameObject().AddComponent<ScrollRect>();
+            var canvasGO = new GameObject("Canvas", typeof(Canvas));
+            canvasGO.AddComponent<CanvasScaler>();
+            canvasGO.AddComponent<GraphicRaycaster>();
+
+            var inputGO = new GameObject("InputField", typeof(RectTransform));
+            inputGO.transform.SetParent(canvasGO.transform);
+            hmiClient.inputField = inputGO.AddComponent<TMP_InputField>();
+
+            var contentGO = new GameObject("ChatContent", typeof(RectTransform));
+            contentGO.transform.SetParent(canvasGO.transform);
+            hmiClient.chatContent = contentGO.transform;
+
+            var scrollGO = new GameObject("ScrollRect", typeof(RectTransform));
+            scrollGO.transform.SetParent(canvasGO.transform);
+            var scrollRect = scrollGO.AddComponent<ScrollRect>();
+            scrollRect.content = contentGO.GetComponent<RectTransform>();
+            hmiClient.scrollRect = scrollRect;
+
+            hmiClient.userMessagePrefab = CreateMessagePrefab("UserMessagePrefab");
+            hmiClient.aiMessagePrefab = CreateMessagePrefab("AIMessagePrefab");
+
+            hmiClient.tempText = CreateTMP("TempText", canvasGO.transform);
+            hmiClient.pressureText = CreateTMP("PressureText", canvasGO.transform);
+            hmiClient.vibrationText = CreateTMP("VibrationText", canvasGO.transform);
+            hmiClient.statusText = CreateTMP("StatusText", canvasGO.transform);
+        }
+
+        private GameObject CreateMessagePrefab(string name)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            var bubble = new GameObject("Bubble", typeof(RectTransform), typeof(LayoutElement));
+            bubble.transform.SetParent(go.transform);
+
+            var text = new GameObject("Text", typeof(RectTransform));
+            text.transform.SetParent(bubble.transform);
+            text.AddComponent<TextMeshProUGUI>();
+
+            return go;
+        }
+
+        private TMP_Text CreateTMP(string name, Transform parent)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(parent);
+            return go.AddComponent<TextMeshProUGUI>();
         }
 
         [TearDown]
@@ -40,10 +75,7 @@ namespace FactoryAIAssistant.Client.Tests
         [UnityTest]
         public IEnumerator GetSensor_Success()
         {
-            // Since mocking UnityWebRequest is difficult, here we only verify that the coroutine completes without throwing an error
-            // Actual API communication would require using a mock server or similar
             yield return hmiClient.StartCoroutine("GetSensor");
-            // For now, only confirm that no error occurs
             Assert.DoesNotThrow(() => { });
         }
 
@@ -51,21 +83,10 @@ namespace FactoryAIAssistant.Client.Tests
         [UnityTest]
         public IEnumerator OnAskButton_MessageNotEmpty_CallsAskAI()
         {
-            hmiClient.userMessagePrefab = new GameObject();
-            hmiClient.userMessagePrefab.AddComponent<TextMeshProUGUI>();
-
-            hmiClient.aiMessagePrefab = new GameObject();
-            hmiClient.aiMessagePrefab.AddComponent<TextMeshProUGUI>();
-
-            var contentGameObject = new GameObject();
-            var contentTransform = contentGameObject.AddComponent<RectTransform>();
-            hmiClient.scrollRect.content = contentTransform;
-
             hmiClient.inputField.text = "テストメッセージ";
 
             hmiClient.OnAskButton();
-            // It is difficult to directly assert that the AskAI coroutine has started
-            // Instead, we indirectly verify it by checking that the InputField is cleared
+
             Assert.IsEmpty(hmiClient.inputField.text);
             yield return null;
         }
@@ -75,8 +96,9 @@ namespace FactoryAIAssistant.Client.Tests
         public IEnumerator OnAskButton_MessageEmpty_DoesNotCallAskAI()
         {
             hmiClient.inputField.text = string.Empty;
+
             hmiClient.OnAskButton();
-            // Since there is no direct way to confirm AskAI was not called, we verify that the InputField remains empty
+
             Assert.IsEmpty(hmiClient.inputField.text);
             yield return null;
         }
