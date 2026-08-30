@@ -115,6 +115,9 @@ namespace FactoryAIAssistant.Client
             LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
             LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
 
+            float bubbleWidth = 0f;
+            float bubbleHeight = 0f;
+
             if (bubble != null)
             {
                 var bubbleLayout = bubble.GetComponent<LayoutElement>();
@@ -126,23 +129,37 @@ namespace FactoryAIAssistant.Client
                     float computedWidth = bubbleText.preferredWidth + paddingHorizontal;
                     float clampedWidth = Mathf.Clamp(computedWidth, 0f, 700f);
                     bubbleLayout.preferredWidth = clampedWidth;
+                    bubbleWidth = clampedWidth;
 
                     LayoutRebuilder.ForceRebuildLayoutImmediate(bubbleText.rectTransform);
                     float paddingVertical = 16f;
                     float computedHeight = bubbleText.preferredHeight + paddingVertical;
-
                     bubbleLayout.preferredHeight = computedHeight;
                     bubbleLayout.minHeight = computedHeight;
                     bubbleLayout.flexibleHeight = 0f;
-
-                    float parentWidth = rect.rect.width;
-                    if (parentWidth > 0f && bubbleLayout.preferredWidth > parentWidth - 32f)
-                    {
-                        bubbleLayout.preferredWidth = Mathf.Max(0f, parentWidth - 32f);
-                        LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
-                        LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
-                    }
+                    bubbleHeight = computedHeight;
                 }
+            }
+
+            float yOffset = 0f;
+            if (chatContent.childCount > 1)
+            {
+                var prevMsg = chatContent.GetChild(chatContent.childCount - 2) as RectTransform;
+                yOffset = prevMsg.anchoredPosition.y - prevMsg.rect.height - 10f; // spacing
+            }
+            else
+            {
+                yOffset = 0f;
+            }
+
+            rect.anchoredPosition = new Vector2(0f, yOffset);
+            rect.sizeDelta = new Vector2(bubbleWidth, bubbleHeight);
+
+            float parentWidth = contentRect.rect.width;
+            if (parentWidth > 0f && bubbleWidth > parentWidth - 32f)
+            {
+                bubbleWidth = Mathf.Max(0f, parentWidth - 32f);
+                rect.sizeDelta = new Vector2(bubbleWidth, bubbleHeight);
             }
 
             Canvas.ForceUpdateCanvases();
