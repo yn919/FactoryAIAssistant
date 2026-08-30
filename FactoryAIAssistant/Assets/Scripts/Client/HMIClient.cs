@@ -138,11 +138,7 @@ namespace FactoryAIAssistant.Client
                     msgRt.sizeDelta = Vector2.zero;
                 }
 
-                try
-                {
-                    messageText.margin = new Vector4(8f, 6f, 8f, 6f);
-                }
-                catch { }
+                try { messageText.margin = new Vector4(8f, 6f, 8f, 6f); } catch { }
 
                 var outline = messageText.GetComponent<Outline>();
                 if (outline != null) outline.enabled = false;
@@ -183,11 +179,6 @@ namespace FactoryAIAssistant.Client
             if (bubble != null)
             {
                 var bubbleLayout = bubble.GetComponent<LayoutElement>() ?? bubble.gameObject.AddComponent<LayoutElement>();
-                var bubbleCSF = bubble.GetComponent<ContentSizeFitter>();
-                if (bubbleCSF != null)
-                {
-                    bubbleCSF.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-                }
 
                 var bubbleText = bubble.GetComponentInChildren<TMP_Text>();
                 if (bubbleText != null)
@@ -207,8 +198,6 @@ namespace FactoryAIAssistant.Client
                     img.color = isMine ? new Color32(0x5A, 0xC8, 0xFF, 0xFF) : new Color32(0x2E, 0x3A, 0x46, 0xFF);
                     img.type = Image.Type.Simple;
                 }
-
-                // ★★★ 削除済み：Sprite.Create を使ったスプライト強制設定 ★★★
             }
 
             var contentRect = chatContent as RectTransform;
@@ -216,6 +205,26 @@ namespace FactoryAIAssistant.Client
             {
                 LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
             }
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+
+            if (bubble != null)
+            {
+                var bubbleLayout = bubble.GetComponent<LayoutElement>();
+                var bubbleText = bubble.GetComponentInChildren<TMP_Text>();
+
+                if (bubbleLayout != null && bubbleText != null)
+                {
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(bubbleText.rectTransform);
+
+                    float paddingVertical = 16f;
+                    float computedHeight = bubbleText.preferredHeight + paddingVertical;
+
+                    bubbleLayout.preferredHeight = computedHeight;
+                    bubbleLayout.minHeight = computedHeight;
+                    bubbleLayout.flexibleHeight = 0f;
+                }
+            }
+
             LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
 
             if (bubble != null)
@@ -266,13 +275,17 @@ namespace FactoryAIAssistant.Client
                     if (isCentered)
                     {
                         if (rowLayout != null) rowLayout.enabled = false;
-                        float finalWidth = (bubble.GetComponent<LayoutElement>() != null && bubble.GetComponent<LayoutElement>().preferredWidth > 0f) ? bubble.GetComponent<LayoutElement>().preferredWidth : bubbleRectFinal.sizeDelta.x;
+                        float finalWidth = (bubble.GetComponent<LayoutElement>() != null && bubble.GetComponent<LayoutElement>().preferredWidth > 0f)
+                            ? bubble.GetComponent<LayoutElement>().preferredWidth
+                            : bubbleRectFinal.sizeDelta.x;
+
+                        bubbleRectFinal.sizeDelta = new Vector2(finalWidth, bubbleRectFinal.sizeDelta.y);
+
                         if (shouldBeRight)
                         {
                             bubbleRectFinal.anchorMin = new Vector2(1f, 0.5f);
                             bubbleRectFinal.anchorMax = new Vector2(1f, 0.5f);
                             bubbleRectFinal.pivot = new Vector2(1f, 0.5f);
-                            bubbleRectFinal.sizeDelta = new Vector2(finalWidth, bubbleRectFinal.sizeDelta.y);
                             bubbleRectFinal.anchoredPosition = new Vector2(-horizontalMargin, 0f);
                         }
                         else
@@ -280,7 +293,6 @@ namespace FactoryAIAssistant.Client
                             bubbleRectFinal.anchorMin = new Vector2(0f, 0.5f);
                             bubbleRectFinal.anchorMax = new Vector2(0f, 0.5f);
                             bubbleRectFinal.pivot = new Vector2(0f, 0.5f);
-                            bubbleRectFinal.sizeDelta = new Vector2(finalWidth, bubbleRectFinal.sizeDelta.y);
                             bubbleRectFinal.anchoredPosition = new Vector2(horizontalMargin, 0f);
                         }
                     }
