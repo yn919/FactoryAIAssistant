@@ -48,7 +48,10 @@ namespace FactoryAIAssistant.Client.Tests
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
             go.transform.SetParent(_canvasGameObject.transform);
-            return go.GetComponent<TextMeshProUGUI>();
+
+            var tmp = go.GetComponent<TextMeshProUGUI>();
+            tmp.font = Resources.Load<TMP_FontAsset>("Fonts/NotoSansJP-Regular SDF");
+            return tmp;
         }
 
         [UnityTest]
