@@ -143,12 +143,31 @@ Unityプロジェクトには工場のような見た目を持つ3Dシーンと�
 - [Unityクライアント仕様書](./FactoryAIAssistant/README.md)
 - [FastAPI仕様書](./factory-hmi-api/README.md)
 
-## 11. 今後の改善候補
+## 初回セットアップ
 
-- センサ値を実設備またはMQTT/WebSocket経由の実データに切り替える
-- AI応答の履歴管理と会話コンテキスト保持
-- 認証やアクセス制御の導入
-- 監視ダッシュボードとアラート機能の強化
-- 本番環境向けのログ、監視、バックアップ設計
+1. `factory-hmi-api` フォルダーでPythonの仮想環境を作成し、依存パッケージをインストールします。詳しい手順は [API README](./factory-hmi-api/README.md) を参照してください。
+2. `factory-hmi-api/.env.example` を `.env` にコピーし、`GEMINI_API_KEY` を設定します。
+3. Unity Hubで `FactoryAIAssistant` フォルダーをUnity 6000系（`FactoryAIAssistant/ProjectSettings/ProjectVersion.txt` の記載バージョン）で開きます。
 
-以上が本リポジトリの全体技術仕様の概要です。詳細設計は各モジュールのREADMEを参照してください。
+## 起動方法
+
+### 1. APIサーバーを起動する
+
+Windows PowerShellでは、リポジトリのルートで次を実行します。
+
+```powershell
+cd factory-hmi-api
+.\.venv\Scripts\Activate.ps1
+python -m uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+ブラウザーで <http://localhost:8000/> を開き、JSONが表示されれば起動しています。停止するときは、APIを実行している画面で `Ctrl+C` を押します。
+
+### 2. Unityシーンを再生する
+
+1. Unity Editorで `Assets/Scenes/FactoryAIAssistantScene.unity` を開きます。
+2. **Play** ボタンを押します。
+3. センサ値の表示と質問入力を確認します。
+4. 終了するときは、もう一度 **Play** ボタンを押します。
+
+全体の運用では、APIを先に起動し、Unityを再生し、Unityを停止してからAPIを停止します。APIが起動していない場合、Unityからセンサ値やAI回答を取得できません。
