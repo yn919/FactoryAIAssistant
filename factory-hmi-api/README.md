@@ -66,11 +66,13 @@ GEMINI_API_KEY=your_api_key_here
 ```
 
 `load_dotenv()` により、起動時に環境変数が読み込まれます。
+`.env.example` にある `SERVER_HOST` と `SERVER_PORT` は、現在の `main.py` では参照していません。
+サーバーのホストとポートは、起動コマンドの `--host` と `--port` で指定します。
 
 ### 5.2 依存関係のインストール
 
 ```bash
-pip install fastapi uvicorn python-dotenv google-generativeai pytest
+pip install fastapi uvicorn python-dotenv google-generativeai pytest httpx
 ```
 
 ## 6. API設計
@@ -181,7 +183,7 @@ class Question(BaseModel):
 
 - APIキー欠落時はGemini呼び出しが失敗する可能性がある
 - 例外発生時はFastAPIの標準例外処理に依存する
-- Unityクライアント側でエラー表示を行う前提とする
+- センサ取得の失敗はUnityクライアントのコンソールに警告として出力され、AI問い合わせの失敗はチャット欄にエラーとして表示される
 
 今後は以下の改善が考えられます。
 
