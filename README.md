@@ -147,6 +147,9 @@ Unityプロジェクトには工場のような見た目を持つ3Dシーンと�
 - [Unityクライアント仕様書](./FactoryAIAssistant/README.md)
 - [FastAPI仕様書](./factory-hmi-api/README.md)
 
+## 11. 解説動画
+[FactoryAIAssistant\Movies\FactoryAIAssistant解説.mp4](https://github.com/yn919/FactoryAIAssistant/blob/create-movie/Movies/FactoryAIAssistant%E8%A7%A3%E8%AA%AC.mp4)
+
 ## 初回セットアップ
 
 1. `factory-hmi-api` フォルダーでPythonの仮想環境を作成し、依存パッケージをインストールします。詳しい手順は [API README](./factory-hmi-api/README.md) を参照してください。
