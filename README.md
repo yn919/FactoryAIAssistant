@@ -31,13 +31,16 @@ Unity側は設備の状態表示と作業者からの質問入力を担い、バ
 
 ```mermaid
 flowchart LR
-    User[作業者] --> UI[Unity HMI UI]
-    UI -->|GET /sensor| API[FastAPI API]
-    UI -->|POST /ask| API
+    User[作業者] --> Unity[Unity HMI]
+
+    Unity -->|GET /sensor<br/>5秒ごと| API[FastAPI API]
+    API -->|温度・圧力・振動・状態<br/>JSON| Unity
+
+    Unity -->|POST /ask<br/>質問メッセージ| API
     API -->|generate_content| Gemini[Google Gemini]
-    Gemini --> API
-    API --> UI
-    UI --> Display[温度 / 圧力 / 振動 / 状態表示]
+    Gemini -->|AI回答| API
+    API -->|JSON形式の回答| Unity
+    Unity --> Chat[AIチャット画面]
 ```
 
 ## 4. ディレクトリ構成
