@@ -66,11 +66,13 @@ GEMINI_API_KEY=your_api_key_here
 ```
 
 `load_dotenv()` により、起動時に環境変数が読み込まれます。
+`.env.example` にある `SERVER_HOST` と `SERVER_PORT` は、現在の `main.py` では参照していません。
+サーバーのホストとポートは、起動コマンドの `--host` と `--port` で指定します。
 
 ### 5.2 依存関係のインストール
 
 ```bash
-pip install fastapi uvicorn python-dotenv google-generativeai pytest
+pip install fastapi uvicorn python-dotenv google-generativeai pytest httpx
 ```
 
 ## 6. API設計
@@ -181,7 +183,7 @@ class Question(BaseModel):
 
 - APIキー欠落時はGemini呼び出しが失敗する可能性がある
 - 例外発生時はFastAPIの標準例外処理に依存する
-- Unityクライアント側でエラー表示を行う前提とする
+- センサ取得の失敗はUnityクライアントのコンソールに警告として出力され、AI問い合わせの失敗はチャット欄にエラーとして表示される
 
 今後は以下の改善が考えられます。
 
@@ -231,14 +233,46 @@ pytest -q
 - AI回答のトーンは工場作業者向けに簡潔に設計されている
 - セキュアな運用のためには認証・監査ログ・アクセス制限が必要
 
-## 12. 改善候補
+# 初めて実行する方へ
 
-- 実設備と連携したセンサデータソースの導入
-- 秘匿情報を含まないログ記録
-- 監査レベルの高いエラー処理
-- 会話履歴・利用履歴の保持
-- 本番運用に向けた認証、TLS、リバースプロキシ設計
+このフォルダーは、Unityから呼び出すFastAPIサーバーです。以下の手順で仮想環境を作成し、依存パッケージをインストールしてから起動します。
 
-## 13. まとめ
+## Windows PowerShellでのセットアップ
 
-本APIは、Unity HMIクライアントと連携して工場設備の状態確認とAI支援を行うための最小構成バックエンドです。FastAPI + Geminiの組み合わせにより、簡易なデモ環境でも対話型の設備支援アプリを成立させることができます。
+リポジトリのルートで実行してください。
+
+```powershell
+cd factory-hmi-api
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+PowerShellでスクリプト実行が制限されている場合は、一度だけ次を実行します。
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+macOS/Linuxの場合は次を実行します。
+
+```bash
+cd factory-hmi-api
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+## APIキーの設定と起動
+
+`.env.example` を `.env` にコピーし、`GEMINI_API_KEY` にGoogle AI StudioのAPIキーを設定します。`.env` はGitにコミットしないでください。
+
+仮想環境を有効にした状態で、次のコマンドを実行します。
+
+```bash
+python -m uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+ブラウザーで <http://localhost:8000/> を開いてJSONが表示されれば成功です。停止するときは `Ctrl+C` を押します。
